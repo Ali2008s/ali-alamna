@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "64457253016",
+    "firebase_url": "https://jaziratalakarm-4d0ab-default-rtdb.firebaseio.com",
+    "project_id": "jaziratalakarm-4d0ab",
+    "storage_bucket": "jaziratalakarm-4d0ab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:64457253016:android:d4cda306938e91373870ed",
+        "android_client_info": {
+          "package_name": "com.example.chatiraq"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1_E1K92d-ww80SuPQHhSXGGIf36Tgv8A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:64457253016:android:58a2691fb53f12013870ed",
+        "android_client_info": {
+          "package_name": "com.example.inews"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1_E1K92d-ww80SuPQHhSXGGIf36Tgv8A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:64457253016:android:e124f60b025f9f3c3870ed",
+        "android_client_info": {
+          "package_name": "com.iqonic.streamitlaraveltv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1_E1K92d-ww80SuPQHhSXGGIf36Tgv8A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

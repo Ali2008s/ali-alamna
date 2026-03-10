@@ -22,6 +22,7 @@ import 'dashboard/components/menu.dart';
 import 'dashboard/dashboard_screen.dart';
 import 'live_tv/live_tv_details/live_tv_details_screen.dart';
 import 'live_tv/model/live_tv_dashboard_response.dart';
+import 'profile/watching_profile/watching_profile_screen.dart';
 // import 'tv_show/tv_show_detail_screen.dart';
 
 class SplashScreenController extends GetxController {
@@ -97,27 +98,54 @@ class SplashScreenController extends GetxController {
 
 //Get Device Information
   Future<void> getDeviceInfo() async {
-    if (Platform.isAndroid) {
-      final androidInfo = await DeviceInfoPlugin().androidInfo;
+    try {
+      if (Platform.isAndroid) {
+        final androidInfo = await DeviceInfoPlugin().androidInfo;
+        // Use androidId or fallback to a unique device ID for TV devices
+        final String deviceId = androidInfo.id.isNotEmpty
+            ? androidInfo.id
+            : '${androidInfo.brand}_${androidInfo.model}_${androidInfo.product}'.validate();
 
+        currentDevice(
+          DeviceData(
+            deviceId: deviceId,
+            deviceName: '${androidInfo.brand}(${androidInfo.model.validate()})',
+            platform: locale.value.android,
+            createdAt: DateTime.now().toUtc().toIso8601String(),
+            updatedAt: DateTime.now().toUtc().toIso8601String(),
+          ),
+        );
+      } else if (Platform.isIOS) {
+        final iosInfo = await DeviceInfoPlugin().iosInfo;
+        currentDevice(
+          DeviceData(
+            deviceId: iosInfo.identifierForVendor.validate(),
+            deviceName: iosInfo.name,
+            platform: locale.value.ios,
+            createdAt: DateTime.now().toUtc().toIso8601String(),
+            updatedAt: DateTime.now().toUtc().toIso8601String(),
+          ),
+        );
+      } else {
+        // Fallback for TV or other Android-based devices
+        currentDevice(
+          DeviceData(
+            deviceId: 'tv_device_${DateTime.now().millisecondsSinceEpoch}',
+            deviceName: 'Smart TV',
+            platform: locale.value.android,
+            createdAt: DateTime.now().toUtc().toIso8601String(),
+            updatedAt: DateTime.now().toUtc().toIso8601String(),
+          ),
+        );
+      }
+    } catch (e) {
+      log('getDeviceInfo error: $e');
+      // Fallback device info to avoid blocking splash screen
       currentDevice(
         DeviceData(
-          deviceId: androidInfo.id.validate(),
-          deviceName: '${androidInfo.brand}(${androidInfo.model.validate()})',
-          platform: locale.value.android,
-          createdAt: DateTime.now().toUtc().toIso8601String(),
-          updatedAt: DateTime.now().toUtc().toIso8601String(),
-        ),
-      );
-    }
-
-    if (Platform.isIOS) {
-      final iosInfo = await DeviceInfoPlugin().iosInfo;
-      currentDevice(
-        DeviceData(
-          deviceId: iosInfo.identifierForVendor.validate(),
-          deviceName: iosInfo.name,
-          platform: locale.value.ios,
+          deviceId: 'unknown_device_${DateTime.now().millisecondsSinceEpoch}',
+          deviceName: 'Unknown Device',
+          platform: 'android',
           createdAt: DateTime.now().toUtc().toIso8601String(),
           updatedAt: DateTime.now().toUtc().toIso8601String(),
         ),
@@ -139,6 +167,8 @@ class SplashScreenController extends GetxController {
       onError: () {
         isLoading(false);
         appNotSynced(true);
+        // ✅ إذا فشل الاتصال بالسيرفر، انتقل للـ Dashboard بدلاً من تجميد السبلاش
+        _navigateOnError();
       },
     ).then((value) async {
       setValue(SharedPreferenceConst.IS_APP_CONFIGURATION_SYNCED_ONCE, true);
@@ -150,10 +180,29 @@ class SplashScreenController extends GetxController {
       isLoading(false);
       appNotSynced(false);
     }).catchError((e) {
-      setValue(SharedPreferenceConst.IS_APP_CONFIGURATION_SYNCED_ONCE, false);
+      log('getAppConfigurations error: $e');
       isLoading(false);
       appNotSynced(true);
-      throw e;
+      // ✅ انتقل للـ Dashboard حتى لو كان فيه خطأ
+      _navigateOnError();
+    });
+  }
+
+  /// Navigate away from splash screen even when there is a network/API error
+  void _navigateOnError() {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (Get.currentRoute == '/' || Get.currentRoute.isEmpty) {
+        if (isLoggedIn.value) {
+          Get.offAll(() => WatchingProfileScreen(), arguments: true);
+        } else {
+          Get.offAll(
+            () => DashboardScreen(),
+            binding: BindingsBuilder(() {
+              getDashboardController().onBottomTabChange(BottomItem.home);
+            }),
+          );
+        }
+      }
     });
   }
 

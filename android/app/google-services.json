@@ -1,22 +1,22 @@
 {
   "project_info": {
-    "project_number": "64457253016",
-    "firebase_url": "https://jaziratalakarm-4d0ab-default-rtdb.firebaseio.com",
-    "project_id": "jaziratalakarm-4d0ab",
-    "storage_bucket": "jaziratalakarm-4d0ab.firebasestorage.app"
+    "project_number": "135301880194",
+    "firebase_url": "https://hnd9-db536-default-rtdb.firebaseio.com",
+    "project_id": "hnd9-db536",
+    "storage_bucket": "hnd9-db536.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:64457253016:android:d4cda306938e91373870ed",
+        "mobilesdk_app_id": "1:135301880194:android:146718a03159faa980179b",
         "android_client_info": {
-          "package_name": "com.example.chatiraq"
+          "package_name": "com.alamna.admin"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD1_E1K92d-ww80SuPQHhSXGGIf36Tgv8A"
+          "current_key": "AIzaSyAdGlNCxDOk0ee-XYz2HQ7JaahxdOyv9GQ"
         }
       ],
       "services": {
@@ -27,15 +27,15 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:64457253016:android:58a2691fb53f12013870ed",
+        "mobilesdk_app_id": "1:135301880194:android:5d009bfd2f4d06ab80179b",
         "android_client_info": {
-          "package_name": "com.example.inews"
+          "package_name": "com.app.almadar.almadar"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD1_E1K92d-ww80SuPQHhSXGGIf36Tgv8A"
+          "current_key": "AIzaSyAdGlNCxDOk0ee-XYz2HQ7JaahxdOyv9GQ"
         }
       ],
       "services": {
@@ -46,7 +46,7 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:64457253016:android:e124f60b025f9f3c3870ed",
+        "mobilesdk_app_id": "1:135301880194:android:8e2d6b64d786b99680179b",
         "android_client_info": {
           "package_name": "com.iqonic.streamitlaraveltv"
         }
@@ -54,7 +54,26 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyD1_E1K92d-ww80SuPQHhSXGGIf36Tgv8A"
+          "current_key": "AIzaSyAdGlNCxDOk0ee-XYz2HQ7JaahxdOyv9GQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:135301880194:android:f4b47f7240dc9a3880179b",
+        "android_client_info": {
+          "package_name": "com.sky.ostouratv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdGlNCxDOk0ee-XYz2HQ7JaahxdOyv9GQ"
         }
       ],
       "services": {

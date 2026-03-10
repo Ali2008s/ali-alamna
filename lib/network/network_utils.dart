@@ -84,13 +84,13 @@ Future<Response> buildHttpResponse(
 
   try {
     if (method == HttpMethodType.POST) {
-      response = await http.post(url, body: jsonEncode(request), headers: headers);
+      response = await http.post(url, body: jsonEncode(request), headers: headers).timeout(const Duration(seconds: 30));
     } else if (method == HttpMethodType.DELETE) {
-      response = await delete(url, headers: headers);
+      response = await delete(url, headers: headers).timeout(const Duration(seconds: 30));
     } else if (method == HttpMethodType.PUT) {
-      response = await put(url, body: jsonEncode(request), headers: headers);
+      response = await put(url, body: jsonEncode(request), headers: headers).timeout(const Duration(seconds: 30));
     } else {
-      response = await get(url, headers: headers);
+      response = await get(url, headers: headers).timeout(const Duration(seconds: 30));
     }
     apiPrint(
       url: url.toString(),

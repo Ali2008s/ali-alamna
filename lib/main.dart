@@ -75,13 +75,19 @@ void main() async {
 
   /// Initialize focus sound service
   // await FocusSoundService.instance.init();
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform).then((value) {
-    PushNotificationService().initFirebaseMessaging();
-    if (kReleaseMode) {
-      FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
-    }
-  }).catchError(onError);
+  /// Initialize Firebase safely - if it fails (e.g. emulator/TV without GMS), continue anyway
+  try {
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform).then((value) {
+      PushNotificationService().initFirebaseMessaging();
+      if (kReleaseMode) {
+        FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+      }
+    }).catchError(onError);
+  } catch (e) {
+    log('Firebase initialization failed (non-fatal): $e');
+    // Continue app startup even without Firebase (e.g. Smart TV without Google Play Services)
+  }
   await GetStorage.init();
 
   /// Initialize encryption service

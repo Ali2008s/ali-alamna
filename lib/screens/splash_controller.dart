@@ -1,8 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io' show Platform;
+import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
@@ -82,8 +81,7 @@ class SplashScreenController extends GetxController {
     } else if (deepLink.split("/")[2] == locale.value.liveTv) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         doIfLogin(onLoggedIn: () {
-          Get.offAll(() => LiveShowDetailsScreen(),
-              arguments: ChannelModel(id: int.parse(deepLink.split("/").last)));
+          Get.offAll(() => LiveShowDetailsScreen(), arguments: ChannelModel(id: int.parse(deepLink.split("/").last)));
         });
       });
     } else {
@@ -99,21 +97,6 @@ class SplashScreenController extends GetxController {
 
 //Get Device Information
   Future<void> getDeviceInfo() async {
-    // Platform checks are not supported on Web
-    if (kIsWeb) {
-      final webInfo = await DeviceInfoPlugin().webBrowserInfo;
-      currentDevice(
-        DeviceData(
-          deviceId: webInfo.userAgent ?? 'web',
-          deviceName: webInfo.browserName.name,
-          platform: 'web',
-          createdAt: DateTime.now().toUtc().toIso8601String(),
-          updatedAt: DateTime.now().toUtc().toIso8601String(),
-        ),
-      );
-      return;
-    }
-
     if (Platform.isAndroid) {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
 
@@ -148,8 +131,7 @@ class SplashScreenController extends GetxController {
   Future<void> getAppConfigurations({bool showLoader = false}) async {
     isLoading(showLoader);
 
-    appNotSynced(
-        !getBoolAsync(SharedPreferenceConst.IS_APP_CONFIGURATION_SYNCED_ONCE));
+    appNotSynced(!getBoolAsync(SharedPreferenceConst.IS_APP_CONFIGURATION_SYNCED_ONCE));
 
     await AuthServiceApis.getAppConfigurations(
       forceSync: true,
@@ -171,36 +153,20 @@ class SplashScreenController extends GetxController {
       setValue(SharedPreferenceConst.IS_APP_CONFIGURATION_SYNCED_ONCE, false);
       isLoading(false);
       appNotSynced(true);
-      if (kIsWeb) {
-        log('API Error on Web: $e');
-        // On web, if it fails, we might want to retry or proceed after a delay
-        Future.delayed(Duration(seconds: 2), () {
-          if (appNotSynced.value) {
-            // Try to proceed to dashboard anyway or show a retry button
-            appNotSynced(false);
-          }
-        });
-      } else {
-        throw e;
-      }
+      throw e;
     });
   }
 
   void getCacheData() {
-    if (getStringAsync(SharedPreferenceConst.CACHE_LIVE_TV_DASHBOARD)
-        .isNotEmpty) {
-      cachedLiveTvDashboard = LiveChannelDashboardResponse.fromJson(jsonDecode(
-          getStringAsync(SharedPreferenceConst.CACHE_LIVE_TV_DASHBOARD)));
+    if (getStringAsync(SharedPreferenceConst.CACHE_LIVE_TV_DASHBOARD).isNotEmpty) {
+      cachedLiveTvDashboard = LiveChannelDashboardResponse.fromJson(jsonDecode(getStringAsync(SharedPreferenceConst.CACHE_LIVE_TV_DASHBOARD)));
     }
     if (getStringAsync(SharedPreferenceConst.CACHE_PROFILE_DETAIL).isNotEmpty) {
-      cachedProfileDetails = ProfileDetailResponse.fromJson(jsonDecode(
-          getStringAsync(SharedPreferenceConst.CACHE_PROFILE_DETAIL)));
+      cachedProfileDetails = ProfileDetailResponse.fromJson(jsonDecode(getStringAsync(SharedPreferenceConst.CACHE_PROFILE_DETAIL)));
     }
 
-    if (getStringAsync(SharedPreferenceConst.USER_SUBSCRIPTION_DATA)
-        .isNotEmpty) {
-      currentSubscription(SubscriptionPlanModel.fromJson(jsonDecode(
-          getStringAsync(SharedPreferenceConst.USER_SUBSCRIPTION_DATA))));
+    if (getStringAsync(SharedPreferenceConst.USER_SUBSCRIPTION_DATA).isNotEmpty) {
+      currentSubscription(SubscriptionPlanModel.fromJson(jsonDecode(getStringAsync(SharedPreferenceConst.USER_SUBSCRIPTION_DATA))));
     }
   }
 }

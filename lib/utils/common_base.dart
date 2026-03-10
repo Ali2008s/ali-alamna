@@ -1,7 +1,7 @@
 // ignore_for_file: body_might_complete_normally_catch_error, deprecated_member_use
 
 import 'dart:async';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -30,13 +30,11 @@ Widget get commonDivider => const Column(
       ],
     );
 
-final fontFamilyWeight700 =
-    GoogleFonts.interTight(fontWeight: FontWeight.w700).fontFamily;
+final fontFamilyWeight700 = GoogleFonts.interTight(fontWeight: FontWeight.w700).fontFamily;
 
 void handleRate() async {
   if (isIOS) {
-    if (getStringAsync(APP_APPSTORE_URL).isNotEmpty)
-      launchUrlCustomURL(APP_APPSTORE_URL);
+    if (getStringAsync(APP_APPSTORE_URL).isNotEmpty) launchUrlCustomURL(APP_APPSTORE_URL);
   } else {
     launchUrlCustomURL('$playStoreBaseURL${await getPackageName()}');
   }
@@ -106,18 +104,14 @@ List<LanguageDataModel> languageList() {
   ];
 }
 
-Widget appCloseIconButton(BuildContext context,
-    {required void Function() onPressed, double size = 12}) {
+Widget appCloseIconButton(BuildContext context, {required void Function() onPressed, double size = 12}) {
   return IconButton(
     iconSize: size,
     padding: EdgeInsets.zero,
     onPressed: onPressed,
     icon: Container(
       padding: EdgeInsets.all(size - 8),
-      decoration: boxDecorationDefault(
-          color: context.cardColor,
-          borderRadius: BorderRadius.circular(size - 4),
-          border: Border.all()),
+      decoration: boxDecorationDefault(color: context.cardColor, borderRadius: BorderRadius.circular(size - 4), border: Border.all()),
       child: Icon(
         Icons.close_rounded,
         size: size,
@@ -126,8 +120,7 @@ Widget appCloseIconButton(BuildContext context,
   );
 }
 
-Future<void> commonLaunchUrl(String address,
-    {LaunchMode launchMode = LaunchMode.inAppWebView}) async {
+Future<void> commonLaunchUrl(String address, {LaunchMode launchMode = LaunchMode.inAppWebView}) async {
   await launchUrl(Uri.parse(address), mode: launchMode).catchError((e) {
     toast('${locale.value.invalidUrl}: $address');
   });
@@ -135,17 +128,13 @@ Future<void> commonLaunchUrl(String address,
 
 //region Common TextStyle
 
-TextStyle get appButtonTextStyleGray =>
-    boldTextStyle(color: appColorSecondary, size: 14);
+TextStyle get appButtonTextStyleGray => boldTextStyle(color: appColorSecondary, size: 14);
 
-TextStyle get appButtonPrimaryColorText =>
-    boldTextStyle(color: appColorPrimary);
+TextStyle get appButtonPrimaryColorText => boldTextStyle(color: appColorPrimary);
 
-TextStyle get appButtonFontColorText =>
-    boldTextStyle(color: Colors.grey, size: 14);
+TextStyle get appButtonFontColorText => boldTextStyle(color: Colors.grey, size: 14);
 
-TextStyle get appButtonTextStyleWhite =>
-    boldTextStyle(color: primaryTextColor, size: 14, weight: FontWeight.w600);
+TextStyle get appButtonTextStyleWhite => boldTextStyle(color: primaryTextColor, size: 14, weight: FontWeight.w600);
 
 TextStyle commonW600SecondaryTextStyle({int? size, Color? color}) {
   return secondaryTextStyle(
@@ -272,8 +261,7 @@ InputDecoration inputDecorationWithFillBorder(
   Color? fillColor,
 }) {
   return InputDecoration(
-    contentPadding:
-        const EdgeInsets.only(left: 12, bottom: 10, top: 10, right: 10),
+    contentPadding: const EdgeInsets.only(left: 12, bottom: 10, top: 10, right: 10),
     labelText: labelText,
     hintText: hintText,
     hintStyle: secondaryTextStyle(size: 12),
@@ -320,9 +308,17 @@ Widget backButton({Object? result, double size = 20, EdgeInsets? padding}) {
     onPressed: () {
       Get.back(result: result);
     },
-    icon: Icon(Icons.arrow_back_ios_new_outlined,
-        color: Colors.white, size: size),
+    icon: Icon(Icons.arrow_back_ios_new_outlined, color: Colors.white, size: size),
   );
+}
+
+/// Routes name to directly navigate the route by its name
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+  }
 }
 
 String movieDurationTime(String time) {
@@ -333,8 +329,7 @@ String movieDurationTime(String time) {
   int seconds = parts.length > 2 ? int.parse(parts[2]) : 0;
 
   // Create a Duration object
-  Duration duration =
-      Duration(hours: hours, minutes: minutes, seconds: seconds);
+  Duration duration = Duration(hours: hours, minutes: minutes, seconds: seconds);
 
   // Extract hours, minutes, and seconds
   int h = duration.inHours;
@@ -358,8 +353,7 @@ String movieDurationTimeWithFull(String time) {
   int seconds = parts.length > 2 ? int.parse(parts[2]) : 00;
 
   // Create a Duration object
-  Duration duration =
-      Duration(hours: hours, minutes: minutes, seconds: seconds);
+  Duration duration = Duration(hours: hours, minutes: minutes, seconds: seconds);
 
   // Extract hours, minutes, and seconds
   int h = duration.inHours;
@@ -378,8 +372,7 @@ String movieDurationTimeWithFull(String time) {
 }
 
 // Pending Movie Percentage
-(double pendingPercentage, String timeLeft) calculatePendingPercentage(
-    String totalDuration, String pendingDuration) {
+(double pendingPercentage, String timeLeft) calculatePendingPercentage(String totalDuration, String pendingDuration) {
   Duration parseTime(String time) {
     if (time.isEmpty) {
       return Duration.zero; // Handle empty input
@@ -494,21 +487,17 @@ String formatMobileNumber(String mobileNumber) {
   return formattedNumber;
 }
 
-DateTime calculateExpirationDate(
-    DateTime startDate, String duration, int durationTime) {
+DateTime calculateExpirationDate(DateTime startDate, String duration, int durationTime) {
   log("Duration TIME value is ==> $durationTime");
   int durationTimes = durationTime;
 
   switch (duration.toLowerCase()) {
     case 'month':
-      return DateTime(
-          startDate.year, startDate.month + durationTimes, startDate.day);
+      return DateTime(startDate.year, startDate.month + durationTimes, startDate.day);
     case 'year':
-      return DateTime(
-          startDate.year + durationTimes, startDate.month, startDate.day);
+      return DateTime(startDate.year + durationTimes, startDate.month, startDate.day);
     case 'quarterly':
-      return DateTime(
-          startDate.year, startDate.month + (durationTimes * 3), startDate.day);
+      return DateTime(startDate.year, startDate.month + (durationTimes * 3), startDate.day);
     case 'week':
       return startDate.add(Duration(days: durationTimes * 7));
 
@@ -518,27 +507,36 @@ DateTime calculateExpirationDate(
   }
 }
 
-SnackbarController errorSnackBar(
-    {required dynamic error, SnackPosition? position}) {
+SnackbarController errorSnackBar({required dynamic error, SnackPosition? position}) {
   String message = '';
   if (error is String) {
     message = error;
   } else if (error is Map && error.containsKey('message')) {
     message = error['message'];
   } else if (error == null) {
-    message = locale.value.somethingWentWrong;
+    error = locale.value.somethingWentWrong;
   } else {
     message = error.toString();
   }
 
-  toast(message);
-  // Return a dummy controller with a safe dummy snackbar
-  return SnackbarController(const GetSnackBar(message: ""));
+  return Get.showSnackBar(
+    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+    message: message,
+    snackPosition: position ?? SnackPosition.TOP,
+    colorText: primaryTextColor,
+    backgroundColor: appColorPrimary,
+  );
 }
 
 SnackbarController successSnackBar(String message, {SnackPosition? position}) {
-  toast(message);
-  return SnackbarController(const GetSnackBar(message: ""));
+  return Get.showSnackBar(
+    message: message,
+    snackPosition: position ?? SnackPosition.TOP,
+    colorText: primaryTextColor,
+    borderRadius: 10,
+    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+    backgroundColor: greenColor,
+  );
 }
 
 String getNumberInString(int durationTime) {
@@ -576,8 +574,7 @@ String getNumberInString(int durationTime) {
 }
 
 bool isMoviePaid({required int requiredPlanLevel}) {
-  return (requiredPlanLevel != 0 &&
-      currentSubscription.value.level < requiredPlanLevel);
+  return (requiredPlanLevel != 0 && currentSubscription.value.level < requiredPlanLevel);
 }
 
 String formatDuration(Duration duration) {
@@ -614,8 +611,7 @@ String getVideoType({required String type}) {
   return videoType;
 }
 
-VideoData getVideoPlayerResp(Map<String, dynamic> response) =>
-    VideoData.fromTrailerJson(response);
+VideoData getVideoPlayerResp(Map<String, dynamic> response) => VideoData.fromTrailerJson(response);
 
 //PlayMovieOrVideo
 
@@ -691,12 +687,10 @@ Future<void> playMovie({
   VideoData? videoModel,
 }) async {
   if (changeVideo) {
-    LiveStream().emit(changeVideoInPodPlayer,
-        [newURL, false, urlType, videoType, videoModel]);
+    LiveStream().emit(changeVideoInPodPlayer, [newURL, false, urlType, videoType, videoModel]);
   }
 
   if (isWatchVideo) {
-    LiveStream()
-        .emit(mOnWatchVideo, [newURL, false, urlType, videoType, videoModel]);
+    LiveStream().emit(mOnWatchVideo, [newURL, false, urlType, videoType, videoModel]);
   }
 }

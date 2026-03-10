@@ -45,9 +45,7 @@ class AuthServiceApis {
     return userData.message;
   }
 
-  static Future<UserData> loginUser(
-      {required Map<String, dynamic> request,
-      bool isSocialLogin = false}) async {
+  static Future<UserData> loginUser({required Map<String, dynamic> request, bool isSocialLogin = false}) async {
     return UserResponse.fromJson(
       await handleResponse(
         await buildHttpResponse(
@@ -64,9 +62,7 @@ class AuthServiceApis {
     setValue(SharedPreferenceConst.IS_LOGGED_IN, true);
     loginUserData(userData);
     currentSubscription(userData.planDetails);
-    currentSubscription.value.activePlanInAppPurchaseIdentifier = isIOS
-        ? currentSubscription.value.appleInAppPurchaseIdentifier
-        : currentSubscription.value.googleInAppPurchaseIdentifier;
+    currentSubscription.value.activePlanInAppPurchaseIdentifier = isIOS ? currentSubscription.value.appleInAppPurchaseIdentifier : currentSubscription.value.googleInAppPurchaseIdentifier;
     setValue(
       SharedPreferenceConst.USER_DATA,
       loginUserData.toJson(),
@@ -77,8 +73,7 @@ class AuthServiceApis {
     );
   }
 
-  static Future<ChangePasswordResponse> changePasswordApi(
-      {required Map request}) async {
+  static Future<ChangePasswordResponse> changePasswordApi({required Map request}) async {
     return ChangePasswordResponse.fromJson(
       await handleResponse(
         await buildHttpResponse(
@@ -90,8 +85,7 @@ class AuthServiceApis {
     );
   }
 
-  static Future<BaseResponseModel> forgotPasswordApi(
-      {required Map request}) async {
+  static Future<BaseResponseModel> forgotPasswordApi({required Map request}) async {
     return BaseResponseModel.fromJson(
       await handleResponse(
         await buildHttpResponse(
@@ -123,8 +117,7 @@ class AuthServiceApis {
       );
       if (page == 1) notifications.clear();
       notifications.addAll(notificationRes.notificationData);
-      lastPageCallBack
-          ?.call(notificationRes.notificationData.length != perPage);
+      lastPageCallBack?.call(notificationRes.notificationData.length != perPage);
       return notifications;
     } else {
       return [];
@@ -139,12 +132,10 @@ class AuthServiceApis {
     );
   }
 
-  static Future<NotificationData> removeNotification(
-      {required String notificationId}) async {
+  static Future<NotificationData> removeNotification({required String notificationId}) async {
     return NotificationData.fromJson(
       await handleResponse(
-        await buildHttpResponse(
-            '${APIEndPoints.removeNotification}?id=$notificationId'),
+        await buildHttpResponse('${APIEndPoints.removeNotification}?id=$notificationId'),
       ),
     );
   }
@@ -173,10 +164,8 @@ class AuthServiceApis {
       GoogleSignIn().disconnect();
     } else {
       final tempEmail = loginUserData.value.email;
-      final tempPASSWORD =
-          getValueFromLocal(SharedPreferenceConst.USER_PASSWORD);
-      final tempIsRememberMe =
-          getValueFromLocal(SharedPreferenceConst.IS_REMEMBER_ME);
+      final tempPASSWORD = getValueFromLocal(SharedPreferenceConst.USER_PASSWORD);
+      final tempIsRememberMe = getValueFromLocal(SharedPreferenceConst.IS_REMEMBER_ME);
       final tempUserName = loginUserData.value.fullName;
       profileId = 0.obs;
 
@@ -214,8 +203,7 @@ class AuthServiceApis {
     cachedWatchList = RxList<PosterDataModel>();
   }
 
-  static Future<BaseResponseModel> deviceLogoutApi(
-      {required String deviceId}) async {
+  static Future<BaseResponseModel> deviceLogoutApi({required String deviceId}) async {
     String id = deviceId.isNotEmpty ? "?device_id=$deviceId" : "";
     return BaseResponseModel.fromJson(
       await handleResponse(
@@ -224,8 +212,7 @@ class AuthServiceApis {
     );
   }
 
-  static Future<BaseResponseModel> deviceLogoutApiWithoutAuth(
-      {required String deviceId, required int userId}) async {
+  static Future<BaseResponseModel> deviceLogoutApiWithoutAuth({required String deviceId, required int userId}) async {
     List<String> params = [];
     params.add("device_id=$deviceId");
     params.add("user_id=$userId");
@@ -264,8 +251,7 @@ class AuthServiceApis {
     );
   }
 
-  static Future<BaseResponseModel> logOutAllAPIWithoutAuth(
-      {required int userId}) async {
+  static Future<BaseResponseModel> logOutAllAPIWithoutAuth({required int userId}) async {
     List<String> params = [];
     params.add("device_id=${currentDevice.value.deviceId}");
     params.add("user_id=$userId");
@@ -286,84 +272,83 @@ class AuthServiceApis {
     bool isFromSplashScreen = false,
     VoidCallback? onError,
   }) async {
-    bool callExecuted = false;
-    await checkApiCallIsWithinTimeSpan(
-      sharePreferencesKey:
-          SharedPreferenceConst.LAST_APP_CONFIGURATION_CALL_TIME,
+    checkApiCallIsWithinTimeSpan(
+      sharePreferencesKey: SharedPreferenceConst.LAST_APP_CONFIGURATION_CALL_TIME,
       forceSync: forceSync,
       callback: () async {
-        callExecuted = true;
         List<String> params = [];
-        if (getBoolAsync(SharedPreferenceConst.IS_LOGGED_IN) &&
-            loginUserData.value.id > -1) {
+        if (getBoolAsync(SharedPreferenceConst.IS_LOGGED_IN) && loginUserData.value.id > -1) {
           params.add('user_id=${loginUserData.value.id}');
         }
-        if (getBoolAsync(SharedPreferenceConst.IS_LOGGED_IN) &&
-            loginUserData.value.id > -1) {
+        if (getBoolAsync(SharedPreferenceConst.IS_LOGGED_IN) && loginUserData.value.id > -1) {
           params.add('device_id=${currentDevice.value.deviceId}');
         }
         params.add('is_authenticated=${(isLoggedIn.isTrue).getIntBool()}');
 
         await buildHttpResponse(
-          getEndPoint(endPoint: APIEndPoints.appConfiguration, params: params),
+          getEndPoint(
+            endPoint: APIEndPoints.appConfiguration,
+            params: params,
+          ),
           manageApiVersion: API_VERSION > 2,
         ).then((value) async {
-          await handleResponse(value).then((value) async {
-            ConfigurationResponse configurationResponse =
-                ConfigurationResponse.fromJson(value);
-            if (configurationResponse.isLogin == false) {
-              AuthServiceApis.removeCacheData();
-              await AuthServiceApis.clearData(isFromDeleteAcc: true);
-              removeKey(SharedPreferenceConst.IS_LOGGED_IN);
-            }
-            appCurrency(configurationResponse.currency);
-            appConfigs(configurationResponse);
-            isSupportedDevice(configurationResponse.isDeviceSupported);
-            setValue(SharedPreferenceConst.IS_SUPPORTED_DEVICE,
-                configurationResponse.isDeviceSupported);
-            setValue(SharedPreferenceConst.LAST_APP_CONFIGURATION_CALL_TIME,
-                DateTime.timestamp().millisecondsSinceEpoch);
-            await setBoolToLocal(
-                SharedPreferenceConst.IS_APP_CONFIGURATION_SYNCED_ONCE, true);
-            setJsonToLocal(SharedPreferenceConst.CACHE_CONFIGURATION_RESPONSE,
-                configurationResponse.toJson());
+          await handleResponse(value).then(
+            (value) async {
+              ConfigurationResponse configurationResponse = ConfigurationResponse.fromJson(value);
 
-            if (isFromSplashScreen) {
-              _doNavigation();
-            } else {
-              getDashboardController().getActiveVastAds();
-            }
-          });
-        }).onError((error, stackTrace) {
-          setBoolToLocal(
-              SharedPreferenceConst.IS_APP_CONFIGURATION_SYNCED_ONCE, false);
-          errorSnackBar(error: error);
-          onError?.call();
-          // Even on error, if we are on splash, try to navigate after showing error
-          if (isFromSplashScreen) {
-            _doNavigation();
-          }
-        });
+              ///If device is logged out from another device with same account then below method will logout locally
+              if (configurationResponse.isLogin == false) {
+                AuthServiceApis.removeCacheData();
+                await AuthServiceApis.clearData(isFromDeleteAcc: true);
+                removeKey(SharedPreferenceConst.IS_LOGGED_IN);
+              }
+
+              appCurrency(configurationResponse.currency);
+              appConfigs(configurationResponse);
+
+              isSupportedDevice(configurationResponse.isDeviceSupported);
+              setValue(SharedPreferenceConst.IS_SUPPORTED_DEVICE, configurationResponse.isDeviceSupported);
+
+              setValue(SharedPreferenceConst.LAST_APP_CONFIGURATION_CALL_TIME, DateTime.timestamp().millisecondsSinceEpoch);
+              await setBoolToLocal(SharedPreferenceConst.IS_APP_CONFIGURATION_SYNCED_ONCE, true);
+              setJsonToLocal(SharedPreferenceConst.CACHE_CONFIGURATION_RESPONSE, configurationResponse.toJson());
+
+              if (isFromSplashScreen) {
+                if (await getBoolFromLocal(SharedPreferenceConst.IS_LOGGED_IN, defaultValue: false) || isLoggedIn.value) {
+                  Get.offAll(() => WatchingProfileScreen(), arguments: true);
+                } else {
+                  Future.delayed(
+                    Duration(milliseconds: 800),
+                    () {
+                      Get.offAll(
+                        () => DashboardScreen(),
+                        binding: BindingsBuilder(
+                          () {
+                            getDashboardController().onBottomTabChange(BottomItem.home);
+
+                            //Get Ads
+                            getDashboardController().getActiveVastAds();
+                          },
+                        ),
+                      );
+                    },
+                  );
+                }
+              } else {
+                //Get Ads
+                getDashboardController().getActiveVastAds();
+              }
+            },
+          );
+        }).onError(
+          (error, stackTrace) {
+            setBoolToLocal(SharedPreferenceConst.IS_APP_CONFIGURATION_SYNCED_ONCE, false);
+            errorSnackBar(error: error);
+            onError?.call();
+          },
+        );
       },
     );
-
-    // If the callback wasn't executed (it was within time span), and we are on splash screen, we MUST still navigate!
-    if (!callExecuted && isFromSplashScreen) {
-      _doNavigation();
-    }
-  }
-
-  static void _doNavigation() {
-    if (getBoolAsync(SharedPreferenceConst.IS_LOGGED_IN) || isLoggedIn.value) {
-      Get.offAll(() => WatchingProfileScreen(), arguments: true);
-    } else {
-      Future.delayed(Duration(milliseconds: 800), () {
-        Get.offAll(() => DashboardScreen(), binding: BindingsBuilder(() {
-          getDashboardController().onBottomTabChange(BottomItem.home);
-          getDashboardController().getActiveVastAds();
-        }));
-      });
-    }
   }
 
   static Future<dynamic> updateProfile({
@@ -376,8 +361,7 @@ class AuthServiceApis {
     Function(dynamic)? onSuccess,
   }) async {
     if (isLoggedIn.value) {
-      http.MultipartRequest multiPartRequest =
-          await getMultiPartRequest(APIEndPoints.updateProfile);
+      http.MultipartRequest multiPartRequest = await getMultiPartRequest(APIEndPoints.updateProfile);
       if (firstName.isNotEmpty) {
         multiPartRequest.fields[UserKeys.firstName] = firstName;
       }

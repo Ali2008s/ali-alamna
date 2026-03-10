@@ -1,5 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:io' show Platform;
+import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -11,18 +10,7 @@ import 'constants.dart';
 
 class PushNotificationService {
   Future<void> initFirebaseMessaging() async {
-    // On web, skip permission request and local notification setup.
-    // Firebase Messaging on web handles push differently.
-    if (kIsWeb) {
-      // Web: still register listeners for foreground messages
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        log('[Web] Foreground message: ${message.notification?.title}');
-      });
-      return;
-    }
-
-    NotificationSettings settings =
-        await FirebaseMessaging.instance.requestPermission(
+    NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
       alert: true,
       badge: true,
       provisional: false,
@@ -36,27 +24,18 @@ class PushNotificationService {
 
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-      FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-          alert: true, badge: true, sound: true);
+      FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(alert: true, badge: true, sound: true);
 
-      await FirebaseMessaging.instance
-          .subscribeToTopic(appNameTopic)
-          .then((value) {
+      await FirebaseMessaging.instance.subscribeToTopic(appNameTopic).then((value) {
         log("${FirebaseMsgConst.topicSubscribed}$appNameTopic");
       });
     }
   }
 
   Future<void> initializePlatformSpecificNotificationChannel() async {
-    if (kIsWeb) return; // Not supported on web
-
     // Notification channel setup for Android
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
-    flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
 
     // Define notification channel
     AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -69,22 +48,15 @@ class PushNotificationService {
     );
 
     // Create notification channel
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
+    await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
 
     // Initialize FlutterLocalNotificationsPlugin
     await flutterLocalNotificationsPlugin.initialize(
-      InitializationSettings(
-          android: AndroidInitializationSettings(
-              '@drawable/ic_stat_ic_notification')),
+      InitializationSettings(android: AndroidInitializationSettings('@drawable/ic_stat_ic_notification')),
     );
   }
 
   Future<void> registerFCMAndTopics() async {
-    if (kIsWeb) return; // subscribeToTopic not supported on web
-
     if (Platform.isIOS) {
       String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
       if (apnsToken == null) {
@@ -101,39 +73,25 @@ class PushNotificationService {
   }
 
   Future<void> subScribeToTopic() async {
-    if (kIsWeb) return; // subscribeToTopic not supported on web
-    await FirebaseMessaging.instance
-        .subscribeToTopic(
-            "${FirebaseMsgConst.userWithUnderscoreKey}${loginUserData.value.id}")
-        .then((value) {
+    await FirebaseMessaging.instance.subscribeToTopic("${FirebaseMsgConst.userWithUnderscoreKey}${loginUserData.value.id}").then((value) {
       log("${FirebaseMsgConst.topicSubscribed}${FirebaseMsgConst.userWithUnderscoreKey}${loginUserData.value.id}");
     });
   }
 
   Future<void> unsubscribeFirebaseTopic() async {
-    if (kIsWeb) return; // unsubscribeFromTopic not supported on web
-    await FirebaseMessaging.instance
-        .unsubscribeFromTopic(
-            '${FirebaseMsgConst.userWithUnderscoreKey}${loginUserData.value.id}')
-        .whenComplete(() {
+    await FirebaseMessaging.instance.unsubscribeFromTopic('${FirebaseMsgConst.userWithUnderscoreKey}${loginUserData.value.id}').whenComplete(() {
       log("${FirebaseMsgConst.topicUnSubscribed}${FirebaseMsgConst.userWithUnderscoreKey}${loginUserData.value.id}");
     });
   }
 
-  Future<void> handleNotificationClick(RemoteMessage message,
-      {bool isForeGround = false}) async {
+  Future<void> handleNotificationClick(RemoteMessage message, {bool isForeGround = false}) async {
     printLogsNotificationData(message);
     if (isForeGround) {
-      showNotification(
-          currentTimeStamp(),
-          message.notification!.title.validate(),
-          message.notification!.body.validate(),
-          message);
+      showNotification(currentTimeStamp(), message.notification!.title.validate(), message.notification!.body.validate(), message);
     } else {
       try {
         if (message.data.containsKey(FirebaseMsgConst.additionalDataKey)) {
-          final additionalData =
-              message.data[FirebaseMsgConst.additionalDataKey];
+          final additionalData = message.data[FirebaseMsgConst.additionalDataKey];
           if (additionalData != null) {
             if (additionalData!.containsKey(FirebaseMsgConst.idKey)) {
               /*  String? postId = additionalData![FirebaseMsgConst.idKey];
@@ -163,8 +121,7 @@ class PushNotificationService {
       });
 
       // workaround for onLaunch: When the app is completely closed (not in the background) and opened directly from the push notification
-      FirebaseMessaging.instance.getInitialMessage().then(
-          (RemoteMessage? message) {
+      FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
         if (message != null) {
           handleNotificationClick(message);
         }
@@ -176,10 +133,8 @@ class PushNotificationService {
     });
   }
 
-  void showNotification(
-      int id, String title, String message, RemoteMessage remoteMessage) async {
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-        FlutterLocalNotificationsPlugin();
+  void showNotification(int id, String title, String message, RemoteMessage remoteMessage) async {
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
     var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
       FirebaseMsgConst.notificationChannelIdKey,
@@ -206,8 +161,7 @@ class PushNotificationService {
       macOS: darwinPlatformChannelSpecifics,
     );
 
-    flutterLocalNotificationsPlugin.show(
-        id, title, message, platformChannelSpecifics);
+    flutterLocalNotificationsPlugin.show(id, title, message, platformChannelSpecifics);
   }
 
   void printLogsNotificationData(RemoteMessage message) {

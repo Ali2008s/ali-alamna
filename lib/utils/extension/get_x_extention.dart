@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:nb_utils/nb_utils.dart'; // Ensure toast is available
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
@@ -46,12 +44,6 @@ extension ExtensionSnackbar on GetInterface {
     Color? overlayColor,
     Form? userInputForm,
   }) {
-    if (kIsWeb) {
-      toast(message);
-      // Return a dummy controller that does nothing for web
-      return SnackbarController(const GetSnackBar(message: ""));
-    }
-
     final showSnackBar = GetSnackBar(
         snackbarStatus: snackbarStatus,
         messageText: messageText ??
@@ -61,8 +53,7 @@ extension ExtensionSnackbar on GetInterface {
             ).paddingSymmetric(vertical: 12),
         snackPosition: snackPosition ?? SnackPosition.TOP,
         borderRadius: borderRadius ?? 15,
-        margin:
-            margin ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+        margin: margin ?? const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
         duration: duration,
         barBlur: barBlur ?? 7.0,
         backgroundColor: backgroundColor ?? Colors.grey.withValues(alpha: 0.2),

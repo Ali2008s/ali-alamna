@@ -15,12 +15,21 @@ class SplashScreen extends StatelessWidget {
 
   SplashScreen({super.key, this.deepLink = "", this.link});
 
-  final SplashScreenController splashController = Get.put(SplashScreenController());
+  /// دائماً احذف الـ Controller القديم وأنشئ واحداً جديداً
+  /// هذا يحل مشكلة التوقف عند إعادة الدخول
+  SplashScreenController get splashController {
+    if (Get.isRegistered<SplashScreenController>()) {
+      Get.delete<SplashScreenController>(force: true);
+    }
+    return Get.put(SplashScreenController());
+  }
 
   @override
   Widget build(BuildContext context) {
+    final controller = splashController;
+
     if (link == true) {
-      splashController.handleDeepLinking(deepLink: deepLink);
+      controller.handleDeepLinking(deepLink: deepLink);
     }
     return AppScaffold(
       hideAppBar: true,
@@ -37,14 +46,14 @@ class SplashScreen extends StatelessWidget {
               height: 56,
             ).center(),
             Obx(
-              () => splashController.isLoading.value
+              () => controller.isLoading.value
                   ? LoaderWidget().center()
                   : TextButton(
                       child: Text(locale.value.reload, style: boldTextStyle()),
                       onPressed: () {
-                        splashController.init(showLoader: true);
+                        controller.init(showLoader: true);
                       },
-                    ).visible(splashController.appNotSynced.isTrue),
+                    ).visible(controller.appNotSynced.isTrue),
             )
           ],
         ),

@@ -16,6 +16,7 @@ dependencies:
   google_fonts: ^6.2.1
   http: ^1.4.0
   intl: ^0.20.2
+  firebase_database: ^11.3.10
   html: ^0.15.6
   cached_network_image: ^3.4.1
   url_launcher: ^6.3.1
@@ -101,3 +102,4 @@ flutter:
     - assets/images/watching_profile/
     - assets/gif/
     - assets/sounds/
+    - shorebird.yaml

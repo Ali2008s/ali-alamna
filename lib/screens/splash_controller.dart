@@ -27,10 +27,12 @@ import 'profile/watching_profile/watching_profile_screen.dart';
 
 class SplashScreenController extends GetxController {
   RxBool appNotSynced = false.obs;
+  RxBool _initialized = false.obs;
 
   @override
   void onInit() {
     super.onInit();
+    _initialized(false);
     init();
   }
 
@@ -44,7 +46,17 @@ class SplashScreenController extends GetxController {
     super.onReady();
   }
 
+  /// يُستدعى من SplashScreen لضمان التهيئة حتى لو كان الـ Controller موجوداً
+  void ensureInit() {
+    if (!_initialized.value) {
+      _initialized(true);
+      getCacheData();
+      getDeviceInfo().then((_) => getAppConfigurations());
+    }
+  }
+
   Future<void> init({bool showLoader = false}) async {
+    _initialized(true);
     getCacheData();
     await getDeviceInfo();
     await getAppConfigurations(showLoader: showLoader);

@@ -13,7 +13,7 @@ const LIVE_AUTO_SLIDER_SECOND = 5;
 const API_VERSION = 3;
 
 ///DO NOT ADD SLASH HERE
-const DOMAIN_URL = "http://arixlab.site/streamit-laravel-web-v2.0.0";
+const DOMAIN_URL = "https://alamna.live";
 
 const BASE_URL = '$DOMAIN_URL/api/';
 

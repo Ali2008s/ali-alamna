@@ -272,10 +272,14 @@ class AuthServiceApis {
     bool isFromSplashScreen = false,
     VoidCallback? onError,
   }) async {
-    checkApiCallIsWithinTimeSpan(
+    // ✅ إذا لم تمرّ 5 دقائق والتطبيق في سبلاش سكرين، نُجبر على التنقل
+    bool callbackWasInvoked = false;
+
+    await checkApiCallIsWithinTimeSpan(
       sharePreferencesKey: SharedPreferenceConst.LAST_APP_CONFIGURATION_CALL_TIME,
       forceSync: forceSync,
       callback: () async {
+        callbackWasInvoked = true;
         List<String> params = [];
         if (getBoolAsync(SharedPreferenceConst.IS_LOGGED_IN) && loginUserData.value.id > -1) {
           params.add('user_id=${loginUserData.value.id}');
@@ -349,6 +353,23 @@ class AuthServiceApis {
         );
       },
     );
+
+    // ✅ الإصلاح الجذري: إذا تجاوزت الدالة الـ callback بدون استدعائه
+    // (بسبب TimeSpan check)، يجب تنفيذ التنقل يدوياً
+    if (!callbackWasInvoked && isFromSplashScreen) {
+      log('getAppConfigurations: timespan skipped callback - forcing navigation');
+      if (isLoggedIn.value) {
+        Get.offAll(() => WatchingProfileScreen(), arguments: true);
+      } else {
+        Get.offAll(
+          () => DashboardScreen(),
+          binding: BindingsBuilder(() {
+            getDashboardController().onBottomTabChange(BottomItem.home);
+            getDashboardController().getActiveVastAds();
+          }),
+        );
+      }
+    }
   }
 
   static Future<dynamic> updateProfile({

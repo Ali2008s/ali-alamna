@@ -94,7 +94,8 @@ class SplashScreenController extends GetxController {
     } else if (deepLink.split("/")[2] == locale.value.liveTv) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         doIfLogin(onLoggedIn: () {
-          Get.offAll(() => LiveShowDetailsScreen(), arguments: ChannelModel(id: int.parse(deepLink.split("/").last)));
+          Get.offAll(() => LiveShowDetailsScreen(),
+              arguments: ChannelModel(id: int.parse(deepLink.split("/").last)));
         });
       });
     } else {
@@ -116,7 +117,8 @@ class SplashScreenController extends GetxController {
         // Use androidId or fallback to a unique device ID for TV devices
         final String deviceId = androidInfo.id.isNotEmpty
             ? androidInfo.id
-            : '${androidInfo.brand}_${androidInfo.model}_${androidInfo.product}'.validate();
+            : '${androidInfo.brand}_${androidInfo.model}_${androidInfo.product}'
+                .validate();
 
         currentDevice(
           DeviceData(
@@ -170,40 +172,53 @@ class SplashScreenController extends GetxController {
   ///Get ChooseService List
   Future<void> getAppConfigurations({bool showLoader = false}) async {
     isLoading(showLoader);
+    appNotSynced(
+        !getBoolAsync(SharedPreferenceConst.IS_APP_CONFIGURATION_SYNCED_ONCE));
 
-    appNotSynced(!getBoolAsync(SharedPreferenceConst.IS_APP_CONFIGURATION_SYNCED_ONCE));
-
-    await AuthServiceApis.getAppConfigurations(
-      forceSync: true,
-      isFromSplashScreen: true,
-      onError: () {
-        isLoading(false);
-        appNotSynced(true);
-        // ✅ إذا فشل الاتصال بالسيرفر، انتقل للـ Dashboard بدلاً من تجميد السبلاش
-        _navigateOnError();
-      },
-    ).then((value) async {
-      setValue(SharedPreferenceConst.IS_APP_CONFIGURATION_SYNCED_ONCE, true);
-      if (getBoolAsync(SharedPreferenceConst.IS_18_PLUS)) {
-        is18Plus(true);
-      } else {
-        is18Plus(false);
-      }
-      isLoading(false);
-      appNotSynced(false);
-    }).catchError((e) {
-      log('getAppConfigurations error: $e');
-      isLoading(false);
-      appNotSynced(true);
-      // ✅ انتقل للـ Dashboard حتى لو كان فيه خطأ
+    // ✅ مؤقت أمان: إذا لم يحدث تنقل خلال 12 ثانية، انتقل تلقائياً
+    final safetyTimer = Future.delayed(const Duration(seconds: 12), () {
       _navigateOnError();
     });
+
+    try {
+      await AuthServiceApis.getAppConfigurations(
+        forceSync: true,
+        isFromSplashScreen: true,
+        onError: () {
+          isLoading(false);
+          appNotSynced(true);
+          _navigateOnError();
+        },
+      ).then((value) async {
+        setValue(SharedPreferenceConst.IS_APP_CONFIGURATION_SYNCED_ONCE, true);
+        is18Plus(getBoolAsync(SharedPreferenceConst.IS_18_PLUS));
+        isLoading(false);
+        appNotSynced(false);
+        // لا داعي لإلغاء safetyTimer لأن _navigateOnError محمية بشرط
+      }).catchError((e) {
+        log('getAppConfigurations error: $e');
+        isLoading(false);
+        appNotSynced(true);
+        _navigateOnError();
+      });
+    } catch (e) {
+      log('getAppConfigurations exception: $e');
+      isLoading(false);
+      _navigateOnError();
+    }
+    // safetyTimer يعمل في الخلفية ولا نحتاج await
+    safetyTimer.ignore();
   }
+
+  bool _hasNavigated = false;
 
   /// Navigate away from splash screen even when there is a network/API error
   void _navigateOnError() {
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (Get.currentRoute == '/' || Get.currentRoute.isEmpty) {
+    if (_hasNavigated) return; // منع التنقل المزدوج
+    _hasNavigated = true;
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      try {
         if (isLoggedIn.value) {
           Get.offAll(() => WatchingProfileScreen(), arguments: true);
         } else {
@@ -214,20 +229,27 @@ class SplashScreenController extends GetxController {
             }),
           );
         }
+      } catch (e) {
+        log('_navigateOnError error: $e');
       }
     });
   }
 
   void getCacheData() {
-    if (getStringAsync(SharedPreferenceConst.CACHE_LIVE_TV_DASHBOARD).isNotEmpty) {
-      cachedLiveTvDashboard = LiveChannelDashboardResponse.fromJson(jsonDecode(getStringAsync(SharedPreferenceConst.CACHE_LIVE_TV_DASHBOARD)));
+    if (getStringAsync(SharedPreferenceConst.CACHE_LIVE_TV_DASHBOARD)
+        .isNotEmpty) {
+      cachedLiveTvDashboard = LiveChannelDashboardResponse.fromJson(jsonDecode(
+          getStringAsync(SharedPreferenceConst.CACHE_LIVE_TV_DASHBOARD)));
     }
     if (getStringAsync(SharedPreferenceConst.CACHE_PROFILE_DETAIL).isNotEmpty) {
-      cachedProfileDetails = ProfileDetailResponse.fromJson(jsonDecode(getStringAsync(SharedPreferenceConst.CACHE_PROFILE_DETAIL)));
+      cachedProfileDetails = ProfileDetailResponse.fromJson(jsonDecode(
+          getStringAsync(SharedPreferenceConst.CACHE_PROFILE_DETAIL)));
     }
 
-    if (getStringAsync(SharedPreferenceConst.USER_SUBSCRIPTION_DATA).isNotEmpty) {
-      currentSubscription(SubscriptionPlanModel.fromJson(jsonDecode(getStringAsync(SharedPreferenceConst.USER_SUBSCRIPTION_DATA))));
+    if (getStringAsync(SharedPreferenceConst.USER_SUBSCRIPTION_DATA)
+        .isNotEmpty) {
+      currentSubscription(SubscriptionPlanModel.fromJson(jsonDecode(
+          getStringAsync(SharedPreferenceConst.USER_SUBSCRIPTION_DATA))));
     }
   }
 }

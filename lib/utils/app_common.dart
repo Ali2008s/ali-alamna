@@ -1,5 +1,6 @@
 import 'dart:async' show Timer;
 import 'dart:io';
+// dart:io not used directly in app_common
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +30,8 @@ import 'constants.dart';
 
 String appPackageName = 'com.iqonic.streamitlaraveltv';
 
-Future<bool> get isIqonicProduct async => await getPackageName() == appPackageName;
+Future<bool> get isIqonicProduct async =>
+    await getPackageName() == appPackageName;
 
 RxString selectedLanguageCode = DEFAULT_LANGUAGE.obs;
 RxBool isLoggedIn = false.obs;
@@ -59,15 +61,21 @@ Rx<ConfigurationResponse> appConfigs = ConfigurationResponse(
 ).obs;
 
 // Currency position common
-bool get isCurrencyPositionLeft => appCurrency.value.currencyPosition == CurrencyPosition.CURRENCY_POSITION_LEFT;
+bool get isCurrencyPositionLeft =>
+    appCurrency.value.currencyPosition ==
+    CurrencyPosition.CURRENCY_POSITION_LEFT;
 
-bool get isCurrencyPositionRight => appCurrency.value.currencyPosition == CurrencyPosition.CURRENCY_POSITION_RIGHT;
+bool get isCurrencyPositionRight =>
+    appCurrency.value.currencyPosition ==
+    CurrencyPosition.CURRENCY_POSITION_RIGHT;
 
 bool get isCurrencyPositionLeftWithSpace =>
-    appCurrency.value.currencyPosition == CurrencyPosition.CURRENCY_POSITION_LEFT_WITH_SPACE;
+    appCurrency.value.currencyPosition ==
+    CurrencyPosition.CURRENCY_POSITION_LEFT_WITH_SPACE;
 
 bool get isCurrencyPositionRightWithSpace =>
-    appCurrency.value.currencyPosition == CurrencyPosition.CURRENCY_POSITION_RIGHT_WITH_SPACE;
+    appCurrency.value.currencyPosition ==
+    CurrencyPosition.CURRENCY_POSITION_RIGHT_WITH_SPACE;
 //endregion
 
 String get appNameTopic => APP_NAME.toLowerCase().replaceAll(' ', '_');
@@ -164,12 +172,15 @@ ReadMoreText readMoreTextWidget(
 }
 
 Border focusBorder(bool condition) {
-  return Border.all(color: condition ? white : Colors.transparent, width: condition ? 3 : 0);
+  return Border.all(
+      color: condition ? white : Colors.transparent, width: condition ? 3 : 0);
 }
 
-Future<void> showSubscriptionDialog({required String title, required String msg, Color? color}) async {
+Future<void> showSubscriptionDialog(
+    {required String title, required String msg, Color? color}) async {
   final FocusNode focusNode = FocusNode();
-  final timer = Timer.periodic(const Duration(milliseconds: 10), (timer) => focusNode.requestFocus());
+  final timer = Timer.periodic(
+      const Duration(milliseconds: 10), (timer) => focusNode.requestFocus());
   await showDialog(
     context: Get.context!,
     barrierDismissible: false,
@@ -184,7 +195,8 @@ Future<void> showSubscriptionDialog({required String title, required String msg,
           Focus(
             onKeyEvent: (node, event) {
               if (event is KeyDownEvent) {
-                if (event.logicalKey == LogicalKeyboardKey.select || event.logicalKey == LogicalKeyboardKey.enter) {
+                if (event.logicalKey == LogicalKeyboardKey.select ||
+                    event.logicalKey == LogicalKeyboardKey.enter) {
                   Get.back();
                   return KeyEventResult.handled;
                 }
@@ -199,7 +211,8 @@ Future<void> showSubscriptionDialog({required String title, required String msg,
                 Get.back();
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 decoration: BoxDecoration(
                   color: color ?? appColorPrimary,
                   border: focusBorder(true),
@@ -232,7 +245,8 @@ Widget viewAllWidget({
     children: [
       Text(
         label,
-        style: commonPrimaryTextStyle(size: labelSize ?? 18, color: labelColor ?? primaryTextColor),
+        style: commonPrimaryTextStyle(
+            size: labelSize ?? 18, color: labelColor ?? primaryTextColor),
       ).expand(),
       if (showViewAll)
         iconButton ??
@@ -250,7 +264,11 @@ Widget viewAllWidget({
   ).paddingSymmetric(horizontal: 16, vertical: 16);
 }
 
-String getEndPoint({required String endPoint, int? perPages, int? page, List<String>? params}) {
+String getEndPoint(
+    {required String endPoint,
+    int? perPages,
+    int? page,
+    List<String>? params}) {
   String perPage = "?per_page=$perPages";
   String pages = "&page=$page";
 
@@ -285,15 +303,19 @@ void onSubscriptionLoginCheck({
   if (isLoggedIn.value) {
     if (planId == 0 && planLevel == 0 && isFromSubscribeCard) {
       //This is to launch subscription screen when not to navigate from origin
-      showSubscriptionDialog(title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
+      showSubscriptionDialog(
+          title: locale.value.subscriptionRequired,
+          msg: locale.value.pleaseSubscribeOrUpgrade);
     } else {
       if (videoAccess == MovieAccess.freeAccess) {
         callBack.call();
-      } else if (currentSubscription.value.level >= planLevel && isSupportedDevice.value) {
+      } else if (currentSubscription.value.level >= planLevel &&
+          isSupportedDevice.value) {
         callBack.call();
       } else {
         if (!isSupportedDevice.value ||
-            (videoAccess != MovieAccess.freeAccess && currentSubscription.value.level < planLevel)) {
+            (videoAccess != MovieAccess.freeAccess &&
+                currentSubscription.value.level < planLevel)) {
           if (!isSupportedDevice.value) {
             showInDialog(
               Get.context!,
@@ -306,7 +328,8 @@ void onSubscriptionLoginCheck({
             );
           } else {
             showSubscriptionDialog(
-                title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
+                title: locale.value.subscriptionRequired,
+                msg: locale.value.pleaseSubscribeOrUpgrade);
           }
         } else {
           callBack.call();
@@ -436,7 +459,8 @@ Future<void> launchUrlCustomURL(String? url) async {
     await custom_tabs.launchUrl(
       Uri.parse(url.validate()),
       customTabsOptions: custom_tabs.CustomTabsOptions(
-        colorSchemes: custom_tabs.CustomTabsColorSchemes.defaults(toolbarColor: appColorPrimary),
+        colorSchemes: custom_tabs.CustomTabsColorSchemes.defaults(
+            toolbarColor: appColorPrimary),
         animations: custom_tabs.CustomTabsSystemAnimations.slideIn(),
         urlBarHidingEnabled: true,
         shareState: custom_tabs.CustomTabsShareState.on,
@@ -450,7 +474,8 @@ Future<void> launchUrlCustomURL(String? url) async {
       ),
       safariVCOptions: custom_tabs.SafariViewControllerOptions(
         barCollapsingEnabled: true,
-        dismissButtonStyle: custom_tabs.SafariViewControllerDismissButtonStyle.close,
+        dismissButtonStyle:
+            custom_tabs.SafariViewControllerDismissButtonStyle.close,
         entersReaderIfAvailable: false,
         preferredControlTintColor: appScreenBackgroundDark,
         preferredBarTintColor: appColorPrimary,
@@ -466,8 +491,10 @@ Future<void> checkApiCallIsWithinTimeSpan({
   Duration? duration,
 }) async {
   DateTime currentTimeStamp = DateTime.timestamp();
-  DateTime lastSyncedTimeStamp = DateTime.fromMillisecondsSinceEpoch(getIntAsync(sharePreferencesKey, defaultValue: 0));
-  DateTime fiveMinutesLater = lastSyncedTimeStamp.add(duration ?? const Duration(minutes: 5));
+  DateTime lastSyncedTimeStamp = DateTime.fromMillisecondsSinceEpoch(
+      getIntAsync(sharePreferencesKey, defaultValue: 0));
+  DateTime fiveMinutesLater =
+      lastSyncedTimeStamp.add(duration ?? const Duration(minutes: 5));
 
   if (forceSync || currentTimeStamp.isAfter(fiveMinutesLater)) {
     callback.call();
@@ -480,12 +507,14 @@ DashboardController getDashboardController() {
   return Get.put(DashboardController());
 }
 
-bool checkQualitySupported({required String quality, required int requirePlanLevel}) {
+bool checkQualitySupported(
+    {required String quality, required int requirePlanLevel}) {
   bool supported = false;
   PlanLimit currentPlanLimit = PlanLimit();
   int index = -1;
   index = currentSubscription.value.planType.indexWhere((element) =>
-      (element.slug == SubscriptionTitle.downloadStatus || element.limitationSlug == SubscriptionTitle.downloadStatus));
+      (element.slug == SubscriptionTitle.downloadStatus ||
+          element.limitationSlug == SubscriptionTitle.downloadStatus));
   if (requirePlanLevel == 0) {
     supported = true;
   } else {
@@ -961,7 +990,8 @@ Duration getWatchedTimeInDuration(String watchedTime) {
   return Duration(hours: hours, minutes: minutes, seconds: seconds);
 }
 
-PlayVideoFrom getVideoPlatform({required String type, required String videoURL}) {
+PlayVideoFrom getVideoPlatform(
+    {required String type, required String videoURL}) {
   String validatedUrl = videoURL.trim();
   validatedUrl = validatedUrl.replaceAll("'", "").replaceAll('"', "");
 
@@ -999,15 +1029,21 @@ PlayVideoFrom getVideoPlatform({required String type, required String videoURL})
     }
 
     Map<String, PlayVideoFrom> videoTypeMap = {
-      PlayerTypes.hls: PlayVideoFrom.network(validatedUrl, httpHeaders: hlsHeaders),
-      PlayerTypes.url: PlayVideoFrom.network(validatedUrl, httpHeaders: headersToUse),
-      PlayerTypes.x265: PlayVideoFrom.network(validatedUrl, httpHeaders: defaultHeaders),
-      PlayerTypes.local: PlayVideoFrom.network(validatedUrl, httpHeaders: headersToUse),
+      PlayerTypes.hls:
+          PlayVideoFrom.network(validatedUrl, httpHeaders: hlsHeaders),
+      PlayerTypes.url:
+          PlayVideoFrom.network(validatedUrl, httpHeaders: headersToUse),
+      PlayerTypes.x265:
+          PlayVideoFrom.network(validatedUrl, httpHeaders: defaultHeaders),
+      PlayerTypes.local:
+          PlayVideoFrom.network(validatedUrl, httpHeaders: headersToUse),
       PlayerTypes.file: PlayVideoFrom.file(File(validatedUrl)),
-      PlayerTypes.youtube: PlayVideoFrom.youtube(validatedUrl, live: validatedUrl.contains('/live/')),
+      PlayerTypes.youtube: PlayVideoFrom.youtube(validatedUrl,
+          live: validatedUrl.contains('/live/')),
     };
 
-    final result = videoTypeMap[type] ?? PlayVideoFrom.network(validatedUrl, httpHeaders: headersToUse);
+    final result = videoTypeMap[type] ??
+        PlayVideoFrom.network(validatedUrl, httpHeaders: headersToUse);
     log("+-+-+-+-+-+-+-+-+-getVideoPlatform result: ${result.runtimeType} with headers for type '$type'");
     return result;
   } catch (e) {

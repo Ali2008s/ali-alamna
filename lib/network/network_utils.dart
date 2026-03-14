@@ -2,7 +2,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
-import 'dart:io';
+import 'dart:io' show HttpHeaders, File;
+
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 
 import 'package:get/get.dart' as gets;
 import 'package:http/http.dart' as http;
@@ -118,12 +120,16 @@ Future<Response> buildHttpResponse(
       return response;
     }
   } on Exception catch (e) {
-    if (e is SocketException) {
+    // SocketException لا يتوفر على الويب، نتحقق بشكل آمن
+    if (!kIsWeb && e.toString().contains('SocketException')) {
       log('SocketException: ${e.toString()}');
       throw errorInternetNotAvailable;
     } else if (e is TimeoutException) {
       log('TimeoutException: ${e.toString()}');
       throw locale.value.gatewayTimeout;
+    } else if (e.toString().contains('Failed to fetch') || e.toString().contains('ClientException')) {
+      log('Web/ClientException: ${e.toString()}');
+      throw errorInternetNotAvailable;
     } else {
       log('Unknown Exception: ${e.toString()}');
       throw errorSomethingWentWrong;
@@ -365,19 +371,21 @@ Map<String, String> buildHeaderForFlutterWave(String flutterWaveSecretKey) {
 }
 
 String getUserAgent() {
-  String userAgent;
-
-  switch (Platform.operatingSystem) {
-    case 'android':
-      userAgent = 'FlutterAndroidApp/1.0 (Android)';
-      break;
-    case 'ios':
-      userAgent = 'FlutteriOSApp/1.0 (iOS)';
-      break;
-    default:
-      userAgent = 'FlutterApp/1.0 (Unknown)';
-      break;
+  if (kIsWeb) {
+    return 'FlutterWebApp/1.0 (Web)';
   }
-
-  return userAgent;
+  switch (defaultTargetPlatform) {
+    case TargetPlatform.android:
+      return 'FlutterAndroidApp/1.0 (Android)';
+    case TargetPlatform.iOS:
+      return 'FlutteriOSApp/1.0 (iOS)';
+    case TargetPlatform.windows:
+      return 'FlutterWindowsApp/1.0 (Windows)';
+    case TargetPlatform.macOS:
+      return 'FlutterMacOSApp/1.0 (macOS)';
+    case TargetPlatform.linux:
+      return 'FlutterLinuxApp/1.0 (Linux)';
+    default:
+      return 'FlutterApp/1.0 (Unknown)';
+  }
 }

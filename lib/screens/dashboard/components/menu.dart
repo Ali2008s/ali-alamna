@@ -9,7 +9,6 @@ enum BottomItem {
   unlockedVideo,
   comingsoon,
   livetv,
-  matchSchedule,
   profile,
 }
 

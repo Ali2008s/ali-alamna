@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -118,7 +119,7 @@ class ProfileController extends GetxController {
       await getProfileDetailsFuture(CoreServiceApis.getProfileDet()).then((value) {
         profileDetailsResp(value.data);
         currentSubscription(value.data.planDetails);
-        currentSubscription.value.activePlanInAppPurchaseIdentifier = isIOS ? currentSubscription.value.appleInAppPurchaseIdentifier : currentSubscription.value.googleInAppPurchaseIdentifier;
+        currentSubscription.value.activePlanInAppPurchaseIdentifier = (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) ? currentSubscription.value.appleInAppPurchaseIdentifier : currentSubscription.value.googleInAppPurchaseIdentifier;
         setValue(SharedPreferenceConst.USER_SUBSCRIPTION_DATA, value.data.planDetails.toJson());
       }).whenComplete(() {
         isLoading(false);

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pod_player/pod_player.dart';
@@ -135,6 +136,12 @@ class TrailerPlayerWidgetState extends State<TrailerPlayerWidget> {
     if (isYoutube) {
       final videoId = widget.videoModel.trailerData.first.url.getYouTubeId();
       if (videoId.isEmpty) return;
+      if (kIsWeb) {
+        _isInitializing = false;
+        _isYoutubeReady = true;
+        _isPlaying = false;
+        return;
+      }
       _youtubeController = YoutubePlayerController(
         initialVideoId: videoId,
         flags: const YoutubePlayerFlags(
@@ -186,6 +193,7 @@ class TrailerPlayerWidgetState extends State<TrailerPlayerWidget> {
   Widget _buildVideoPlayer() {
     if (isYoutube) {
       if (_youtubeController == null) return const Offstage();
+      if (kIsWeb) return _buildThumbnailBackground();
       return Opacity(
         opacity: _isPlaying ? 1.0 : 0.0,
         child: YoutubePlayer(

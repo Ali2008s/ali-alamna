@@ -1,9 +1,9 @@
-// watching_profile_controller.dart
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' show Directory, File;
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -40,7 +40,8 @@ class WatchingProfileController extends GetxController {
   RxBool isLastPage = false.obs;
   RxBool isBtnEnable = false.obs;
   RxInt currentPage = 1.obs;
-  Rx<Future<RxList<WatchingProfileModel>>> getProfileFuture = Future(() => RxList<WatchingProfileModel>()).obs;
+  Rx<Future<RxList<WatchingProfileModel>>> getProfileFuture =
+      Future(() => RxList<WatchingProfileModel>()).obs;
 
   final TextEditingController saveNameController = TextEditingController();
   final GlobalKey<FormState> editFormKey = GlobalKey<FormState>();
@@ -132,11 +133,12 @@ class WatchingProfileController extends GetxController {
     double? height,
     double? width,
   }) {
-    if (imagePath.startsWith('http') || Uri.tryParse(imagePath)?.isAbsolute == true) {
+    if (imagePath.startsWith('http') ||
+        Uri.tryParse(imagePath)?.isAbsolute == true) {
       return NetworkImage(
         '$imagePath?v=${DateTime.now().millisecondsSinceEpoch}',
       );
-    } else if (File(imagePath).existsSync()) {
+    } else if (!kIsWeb && File(imagePath).existsSync()) {
       return FileImage(File(imagePath));
     } else {
       return AssetImage(imagePath);
@@ -160,8 +162,11 @@ class WatchingProfileController extends GetxController {
       toast(e.toString());
       throw e;
     }).then((v) {
-      if (profileId.value > 0 && accountProfiles.isNotEmpty && accountProfiles.any((element) => element.id == profileId.value)) {
-        selectedProfile(accountProfiles.firstWhere((element) => element.id == profileId.value));
+      if (profileId.value > 0 &&
+          accountProfiles.isNotEmpty &&
+          accountProfiles.any((element) => element.id == profileId.value)) {
+        selectedProfile(accountProfiles
+            .firstWhere((element) => element.id == profileId.value));
         selectedAccountProfile(selectedProfile.value);
         profileId(selectedProfile.value.id);
       }
@@ -175,7 +180,8 @@ class WatchingProfileController extends GetxController {
     const length = 10;
     const digits = '0123456789';
 
-    return List.generate(length, (index) => digits[random.nextInt(digits.length)]).join();
+    return List.generate(
+        length, (index) => digits[random.nextInt(digits.length)]).join();
   }
 
   Future<void> editUserProfile(bool isEdit, {required String name}) async {
@@ -184,30 +190,31 @@ class WatchingProfileController extends GetxController {
     File? tempFile;
 
     try {
-      if (centerImagePath.value.startsWith("http")) {
-        final response = await http.get(Uri.parse(centerImagePath.value));
-        if (response.statusCode == 200) {
-          Directory tempDir = await getTemporaryDirectory();
-          String tempPath = '${tempDir.path}/downloaded_image.png';
-          tempFile = File(tempPath);
-          await tempFile.writeAsBytes(response.bodyBytes);
-        } else {
-          throw Exception("Failed to download image");
-        }
-      } else {
-        if (await File(centerImagePath.value).exists()) {
-          tempFile = File(centerImagePath.value);
-        } else {
-          ByteData byteData = await rootBundle.load(centerImagePath.value);
+      if (!kIsWeb) {
+        if (centerImagePath.value.startsWith("http")) {
+          final response = await http.get(Uri.parse(centerImagePath.value));
+          if (response.statusCode == 200) {
+            Directory tempDir = await getTemporaryDirectory();
+            String tempPath = '${tempDir.path}/downloaded_image.png';
+            tempFile = File(tempPath);
+            await tempFile.writeAsBytes(response.bodyBytes);
+          } else {
+            throw Exception("Failed to download image");
+          }
+        } else if (centerImagePath.value.isNotEmpty) {
+          if (await File(centerImagePath.value).exists()) {
+            tempFile = File(centerImagePath.value);
+          } else {
+            ByteData byteData = await rootBundle.load(centerImagePath.value);
+            final buffer = byteData.buffer;
+            Directory tempDir = await getTemporaryDirectory();
+            String tempPath =
+                '${tempDir.path}/temp_image.${generateRandomString()}.png';
 
-          final buffer = byteData.buffer;
-          Directory tempDir = await getTemporaryDirectory();
-          String tempPath = '${tempDir.path}/temp_image.${generateRandomString()}.png';
-
-          tempFile = File(tempPath)
-            ..writeAsBytesSync(
-              buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes),
-            );
+            tempFile = File(tempPath)
+              ..writeAsBytesSync(buffer.asUint8List(
+                  byteData.offsetInBytes, byteData.lengthInBytes));
+          }
         }
       }
 
@@ -221,27 +228,32 @@ class WatchingProfileController extends GetxController {
 
       await CoreServiceApis.updateWatchProfile(
         request: request,
-        files: [tempFile],
+        files: tempFile != null ? [tempFile] : [],
       ).then((value) async {
         if (value.newUserProfile.id > -1) {
           if (isEdit) {
-            accountProfiles.removeWhere((element) => element.id == selectedProfile.value.id);
+            accountProfiles.removeWhere(
+                (element) => element.id == selectedProfile.value.id);
           }
           accountProfiles.add(value.newUserProfile);
           selectedProfile(value.newUserProfile);
         } else {
           await getProfilesList();
         }
-        successSnackBar(isEdit ? locale.value.profileUpdatedSuccessfully : locale.value.newProfileAddedSuccessfully);
+        successSnackBar(isEdit
+            ? locale.value.profileUpdatedSuccessfully
+            : locale.value.newProfileAddedSuccessfully);
       }).catchError((e) {
         isLoading(false);
         if (e is Map<String, dynamic>) {
           errorSnackBar(error: e['error']);
           if (e['status_code'] == 406) {
             Future.delayed(
-              Duration(seconds: 1),
+              const Duration(seconds: 1),
               () {
-                showSubscriptionDialog(title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
+                showSubscriptionDialog(
+                    title: locale.value.subscriptionRequired,
+                    msg: locale.value.pleaseSubscribeOrUpgrade);
               },
             );
           }
@@ -256,7 +268,8 @@ class WatchingProfileController extends GetxController {
     }
   }
 
-  Future<void> deleteUserProfile(String id, {bool isFromProfileWatching = false}) async {
+  Future<void> deleteUserProfile(String id,
+      {bool isFromProfileWatching = false}) async {
     if (isLoading.isTrue) return;
     isLoading(true);
     Map<String, dynamic> request = {"profile_id": id};
@@ -277,7 +290,8 @@ class WatchingProfileController extends GetxController {
     if (profile.id != profileId.value) {
       if (profile.isProtectedProfile.getBoolInt() &&
           profile.profilePin.isNotEmpty &&
-          (accountProfiles.any((element) => element.isChildProfile == 1) && selectedAccountProfile.value.isChildProfile.getBoolInt())) {
+          (accountProfiles.any((element) => element.isChildProfile == 1) &&
+              selectedAccountProfile.value.isChildProfile.getBoolInt())) {
         Get.to(
           () => PinVerificationScreen(
             correctPin: profile.profilePin,
@@ -316,7 +330,8 @@ class WatchingProfileController extends GetxController {
     if (isEdit) {
       selectedProfile(profile);
       saveNameController.text = selectedProfile.value.name;
-      isChildrenProfileEnabled.value = profile.isChildProfile == 1 ? true : false;
+      isChildrenProfileEnabled.value =
+          profile.isChildProfile == 1 ? true : false;
       updateCenterImage(profile.avatar);
     }
     Get.bottomSheet(
@@ -336,7 +351,9 @@ class WatchingProfileController extends GetxController {
     isLoading(true);
     Get.back();
 
-    await AuthServiceApis.deviceLogoutApi(deviceId: currentDevice.value.deviceId).then((value) async {
+    await AuthServiceApis.deviceLogoutApi(
+            deviceId: currentDevice.value.deviceId)
+        .then((value) async {
       isLoggedIn(false);
       AuthServiceApis.removeCacheData();
       await AuthServiceApis.clearData();
@@ -366,7 +383,8 @@ class WatchingProfileController extends GetxController {
     });
   }
 
-  void verifyPin(String correctPin, Function() onSuccess, {required BuildContext context}) async {
+  void verifyPin(String correctPin, Function() onSuccess,
+      {required BuildContext context}) async {
     if (pinController.text.isEmpty) {
       toast("Please enter PIN first");
     } else if (pinController.text == correctPin) {
@@ -377,10 +395,10 @@ class WatchingProfileController extends GetxController {
       for (var element in list) {
         element.textEditingController?.clear();
       }
-      if(list.isNotEmpty && list.first.focusNode != null) {
+      if (list.isNotEmpty && list.first.focusNode != null) {
         FocusScope.of(context).requestFocus(FocusNode());
         await Future.delayed(Duration(milliseconds: 100));
-        if(!context.mounted) return; 
+        if (!context.mounted) return;
         FocusScope.of(context).requestFocus(list.first.focusNode!);
       }
     }
@@ -393,7 +411,7 @@ class WatchingProfileController extends GetxController {
       focusNode.dispose();
     }
     profileFocusNodes.clear();
-    
+
     for (var state in profileFocusStates.values) {
       try {
         state.close();
@@ -402,12 +420,12 @@ class WatchingProfileController extends GetxController {
       }
     }
     profileFocusStates.clear();
-    
+
     for (int i = 0; i < count; i++) {
       profileFocusNodes.add(FocusNode());
       profileFocusStates[i] = false.obs;
     }
-    
+
     if (profileFocusNodes.isNotEmpty) {
       Future.delayed(Duration(milliseconds: 100), () {
         profileFocusNodes[0].requestFocus();
@@ -454,12 +472,12 @@ class WatchingProfileController extends GetxController {
           break;
         }
       }
-      
+
       if (currentIndex >= 0) {
         if (currentIndex < profileFocusNodes.length - 1) {
           profileFocusNodes[currentIndex + 1].requestFocus();
         }
-        if(currentIndex == profileFocusNodes.length - 1) {
+        if (currentIndex == profileFocusNodes.length - 1) {
           moveFocusToAddProfileButton();
         }
       } else {
@@ -477,7 +495,7 @@ class WatchingProfileController extends GetxController {
           break;
         }
       }
-      
+
       if (currentIndex >= 0) {
         if (currentIndex > 0) {
           profileFocusNodes[currentIndex - 1].requestFocus();
@@ -499,7 +517,7 @@ class WatchingProfileController extends GetxController {
     for (var focusNode in profileFocusNodes) {
       focusNode.dispose();
     }
-    
+
     // Dispose focus states
     for (var state in profileFocusStates.values) {
       try {
@@ -509,7 +527,7 @@ class WatchingProfileController extends GetxController {
       }
     }
     profileFocusStates.clear();
-    
+
     // ... existing dispose code ...
     pinController.dispose();
     lastActiveOTPFocusNode.value.dispose();

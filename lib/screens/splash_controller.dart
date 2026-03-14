@@ -1,7 +1,9 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:convert';
-import 'dart:io';
+
+
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
@@ -112,7 +114,18 @@ class SplashScreenController extends GetxController {
 //Get Device Information
   Future<void> getDeviceInfo() async {
     try {
-      if (Platform.isAndroid) {
+      if (kIsWeb) {
+        // على الويب لا يوجد device ID حقيقي
+        currentDevice(
+          DeviceData(
+            deviceId: 'web_device_${DateTime.now().millisecondsSinceEpoch}',
+            deviceName: 'Web Browser',
+            platform: 'web',
+            createdAt: DateTime.now().toUtc().toIso8601String(),
+            updatedAt: DateTime.now().toUtc().toIso8601String(),
+          ),
+        );
+      } else if (defaultTargetPlatform == TargetPlatform.android) {
         final androidInfo = await DeviceInfoPlugin().androidInfo;
         // Use androidId or fallback to a unique device ID for TV devices
         final String deviceId = androidInfo.id.isNotEmpty
@@ -129,7 +142,7 @@ class SplashScreenController extends GetxController {
             updatedAt: DateTime.now().toUtc().toIso8601String(),
           ),
         );
-      } else if (Platform.isIOS) {
+      } else if (defaultTargetPlatform == TargetPlatform.iOS) {
         final iosInfo = await DeviceInfoPlugin().iosInfo;
         currentDevice(
           DeviceData(

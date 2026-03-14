@@ -53,7 +53,8 @@ class LanguageAr extends BaseLanguage {
   String get delete => 'يمسح';
 
   @override
-  String get demoUserCannotBeGrantedForThis => 'لا يمكن منح المستخدم التجريبي لهذا الإجراء';
+  String get demoUserCannotBeGrantedForThis =>
+      'لا يمكن منح المستخدم التجريبي لهذا الإجراء';
 
   @override
   String get somethingWentWrong => 'حدث خطأ ما';
@@ -65,10 +66,12 @@ class LanguageAr extends BaseLanguage {
   String get profileUpdatedSuccessfully => 'تم تحديث الملف الشخصي بنجاح';
 
   @override
-  String get wouldYouLikeToSetProfilePhotoAs => 'هل ترغب في تعيين هذه الصورة كصورة ملفك الشخصي؟';
+  String get wouldYouLikeToSetProfilePhotoAs =>
+      'هل ترغب في تعيين هذه الصورة كصورة ملفك الشخصي؟';
 
   @override
-  String get yourConfirmPasswordDoesnT => 'تأكيد كلمة المرور الخاصة بك لا يتطابق مع كلمة المرور!';
+  String get yourConfirmPasswordDoesnT =>
+      'تأكيد كلمة المرور الخاصة بك لا يتطابق مع كلمة المرور!';
 
   @override
   String get yes => 'نعم';
@@ -95,7 +98,8 @@ class LanguageAr extends BaseLanguage {
   String get emailIsARequiredField => 'البريد الإلكتروني هو حقل مطلوب';
 
   @override
-  String get pleaseEnterValidEmailAddress => 'يرجى إدخال عنوان بريد إلكتروني صالح!!';
+  String get pleaseEnterValidEmailAddress =>
+      'يرجى إدخال عنوان بريد إلكتروني صالح!!';
 
   @override
   String get signIn => 'تسجيل الدخول';
@@ -140,10 +144,12 @@ class LanguageAr extends BaseLanguage {
   String get stayTunedNoNew => 'ابقوا متابعين! لا توجد إشعارات جديدة.';
 
   @override
-  String get noNewNotificationsAt => 'لا توجد إشعارات جديدة في الوقت الراهن. سنبقيك على اطلاع عندما يكون هناك تحديث';
+  String get noNewNotificationsAt =>
+      'لا توجد إشعارات جديدة في الوقت الراهن. سنبقيك على اطلاع عندما يكون هناك تحديث';
 
   @override
-  String get walkthroughTitle1 => 'شاهد على أي جهاز: استمتع بالمحتوى الخاص بنا أينما ذهبت!';
+  String get walkthroughTitle1 =>
+      'شاهد على أي جهاز: استمتع بالمحتوى الخاص بنا أينما ذهبت!';
 
   @override
   String get walkthroughDesp1 => 'البث عبر جميع الأجهزة دون رسوم إضافية.';
@@ -153,10 +159,12 @@ class LanguageAr extends BaseLanguage {
       'التنزيل والانطلاق: يمكنك الوصول إلى المحتوى الخاص بك في أي مكان وفي أي وقت وعلى أي جهاز';
 
   @override
-  String get walkthroughDesp2 => 'قم بتنزيل المحتوى والاستمتاع به أثناء التنقل، في أي مكان وفي أي وقت.';
+  String get walkthroughDesp2 =>
+      'قم بتنزيل المحتوى والاستمتاع به أثناء التنقل، في أي مكان وفي أي وقت.';
 
   @override
-  String get walkthroughTitle3 => 'استمتع بالحرية دون التزامات أو متاعب - انضم إلينا اليوم!';
+  String get walkthroughTitle3 =>
+      'استمتع بالحرية دون التزامات أو متاعب - انضم إلينا اليوم!';
 
   @override
   String get walkthroughDesp3 => 'انضم إلينا بدون أي متاعب وبدون عقود مطلوبة.';
@@ -178,7 +186,8 @@ class LanguageAr extends BaseLanguage {
   String get optionTitle => 'اكتشف أفضل العروض مع الأنواع المخصصة لتفضيلاتك.';
 
   @override
-  String get optionDesp => 'استكشف العروض المنسقة عبر الأنواع المصممة لتناسب تفضيلات المشاهدة الخاصة بك.';
+  String get optionDesp =>
+      'استكشف العروض المنسقة عبر الأنواع المصممة لتناسب تفضيلات المشاهدة الخاصة بك.';
 
   @override
   String get welcomeBackToStreamIt => 'مرحبًا بك مرة أخرى في StreamIt!';
@@ -193,20 +202,22 @@ class LanguageAr extends BaseLanguage {
   String get or => 'أو';
 
   @override
-  String get dontWorryItHappens => 'لا تقلق! يحدث ذلك. الرجاء إدخال البريد الإلكتروني المرتبط بحسابك';
+  String get dontWorryItHappens =>
+      'لا تقلق! يحدث ذلك. الرجاء إدخال البريد الإلكتروني المرتبط بحسابك';
 
   @override
   String get linkSentToYourEmail => 'تم إرسال الرابط إلى بريدك الإلكتروني!';
 
   @override
-  String get checkYourInboxAndChangePassword => 'تحقق من صندوق الوارد الخاص بك وقم بتغيير كلمة المرور';
+  String get checkYourInboxAndChangePassword =>
+      'تحقق من صندوق الوارد الخاص بك وقم بتغيير كلمة المرور';
 
   @override
   String get continues => 'يكمل';
 
   @override
   String otpValidUntill(int seconds) =>
-    'يمكنك إعادة إرسال رمز OTP خلال $seconds ثانية';
+      'يمكنك إعادة إرسال رمز OTP خلال $seconds ثانية';
 
   @override
   String get oTPVerification => 'التحقق من OTP';
@@ -252,7 +263,8 @@ class LanguageAr extends BaseLanguage {
   String get noDataFound => 'لم يتم العثور على بيانات';
 
   @override
-  String get rentedVideoNotPurchase => 'لم تقم باستئجار هذا الفيديو بعد. يرجى استئجاره من لوحة الويب لفتحه ومشاهدته.';
+  String get rentedVideoNotPurchase =>
+      'لم تقم باستئجار هذا الفيديو بعد. يرجى استئجاره من لوحة الويب لفتحه ومشاهدته.';
 
   @override
   String get subscribe => 'يشترك';
@@ -261,7 +273,7 @@ class LanguageAr extends BaseLanguage {
   String get subscribeToWatch => 'اشترك للمشاهدة';
 
   @override
-  String get playNow => 'العب الآن';
+  String get playNow => 'شاهد الأن';
 
   @override
   String get continueWatching => 'مواصلة المشاهدة ';
@@ -276,7 +288,7 @@ class LanguageAr extends BaseLanguage {
   String get genres => 'الأنواع';
 
   @override
-  String get trailer => 'جَرَّار';
+  String get trailer => 'الأعلان';
 
   @override
   String get ua18 => 'ش/أ 18';
@@ -324,7 +336,8 @@ class LanguageAr extends BaseLanguage {
   String get moreLikeThis => 'المزيد من هذا القبيل';
 
   @override
-  String get shareYourThoughtsOnYourFavoriteMovie => 'شارك أفكارك حول فيلمك المفضل';
+  String get shareYourThoughtsOnYourFavoriteMovie =>
+      'شارك أفكارك حول فيلمك المفضل';
 
   @override
   String get rateThisMovie => 'قيم هذا الفيلم';
@@ -342,7 +355,8 @@ class LanguageAr extends BaseLanguage {
   String get close => 'يغلق';
 
   @override
-  String get oppsLooksLikeYouReview => 'انتبه! يبدو أنك لم تقم بإضافة أي مراجعة بعد.';
+  String get oppsLooksLikeYouReview =>
+      'انتبه! يبدو أنك لم تقم بإضافة أي مراجعة بعد.';
 
   @override
   String get retry => 'أعد المحاولة';
@@ -474,7 +488,8 @@ class LanguageAr extends BaseLanguage {
   String get yourWatchlistIsEmpty => 'قائمة المراقبة الخاصة بك فارغة';
 
   @override
-  String get contentAddedToYourWatchlist => 'سيظهر هنا المحتوى المضاف إلى قائمة المراقبة الخاصة بك';
+  String get contentAddedToYourWatchlist =>
+      'سيظهر هنا المحتوى المضاف إلى قائمة المراقبة الخاصة بك';
 
   @override
   String get add => 'يضيف';
@@ -562,10 +577,12 @@ class LanguageAr extends BaseLanguage {
       'يرجى المحاولة مرة أخرى بعد مرور بعض الوقت. لقد استخدمت طلبات التحقق المتعددة!';
 
   @override
-  String get pleaseEnterAValidCode => 'الرجاء إدخال كلمة المرور لمرة واحدة (OTP) صالحة';
+  String get pleaseEnterAValidCode =>
+      'الرجاء إدخال كلمة المرور لمرة واحدة (OTP) صالحة';
 
   @override
-  String get pleaseCheckYourMobileInternetConnection => 'يرجى التحقق من اتصالك بالإنترنت عبر الهاتف المحمول';
+  String get pleaseCheckYourMobileInternetConnection =>
+      'يرجى التحقق من اتصالك بالإنترنت عبر الهاتف المحمول';
 
   @override
   String get error => 'خطأ';
@@ -637,7 +654,8 @@ class LanguageAr extends BaseLanguage {
   String get mobileNumberIsRequiredField => 'رقم الجوال هو حقل مطلوب';
 
   @override
-  String get youHaveAlreadyDownloadedThisMovie => 'لقد قمت بالفعل بتنزيل هذا الفيلم';
+  String get youHaveAlreadyDownloadedThisMovie =>
+      'لقد قمت بالفعل بتنزيل هذا الفيلم';
 
   @override
   String get iMDB => 'موقع آي إم دي بي';
@@ -721,7 +739,8 @@ class LanguageAr extends BaseLanguage {
   String get noItemsToContinueWatching => 'لا توجد عناصر لمواصلة المشاهدة';
 
   @override
-  String get noItemsAddedToTheWatchlist => 'لم تتم إضافة أي عناصر إلى قائمة المراقبة';
+  String get noItemsAddedToTheWatchlist =>
+      'لم تتم إضافة أي عناصر إلى قائمة المراقبة';
 
   @override
   String get ok => 'نعم';
@@ -736,7 +755,8 @@ class LanguageAr extends BaseLanguage {
   String get removedFromWatchList => 'تم حذف قائمة المشاهدة بنجاح';
 
   @override
-  String get removeSelectedFromWatchList => 'هل تريد إزالة المحتوى المحدد من قائمة المشاهدة الخاصة بك؟';
+  String get removeSelectedFromWatchList =>
+      'هل تريد إزالة المحتوى المحدد من قائمة المشاهدة الخاصة بك؟';
 
   @override
   String get removedFromContinueWatch => 'متابعة المشاهدة المحذوفة بنجاح';
@@ -748,10 +768,12 @@ class LanguageAr extends BaseLanguage {
   String get pleaseAddYourReview => 'الرجاء إضافة تقييمك';
 
   @override
-  String get thisMovieIsCurrentlUnavailableToWatch => 'هذا الفيلم غير متاح حاليًا للمشاهدة';
+  String get thisMovieIsCurrentlUnavailableToWatch =>
+      'هذا الفيلم غير متاح حاليًا للمشاهدة';
 
   @override
-  String get thisVideoIsCurrentlUnavailableToWatch => 'هذا الفيديو غير متاح حاليًا للمشاهدة';
+  String get thisVideoIsCurrentlUnavailableToWatch =>
+      'هذا الفيديو غير متاح حاليًا للمشاهدة';
 
   @override
   String get subscriptionHistory => 'تاريخ الاشتراك';
@@ -784,7 +806,8 @@ class LanguageAr extends BaseLanguage {
   String get viewLess => 'عرض أقل';
 
   @override
-  String get removeSelectedFromDownloads => 'هل تريد إزالة هذا من التنزيلات الخاصة بك';
+  String get removeSelectedFromDownloads =>
+      'هل تريد إزالة هذا من التنزيلات الخاصة بك';
 
   @override
   String get noPaymentMethodsFound => 'لم يتم العثور على طرق الدفع';
@@ -811,7 +834,8 @@ class LanguageAr extends BaseLanguage {
   String get addProfile => 'أضف الملف الشخصي';
 
   @override
-  String get clearSearchHistoryConfirmation => 'هل تريد مسح سجل البحث الخاص بك؟';
+  String get clearSearchHistoryConfirmation =>
+      'هل تريد مسح سجل البحث الخاص بك؟';
 
   @override
   String get clearSearchHistorySubtitle =>
@@ -953,7 +977,8 @@ class LanguageAr extends BaseLanguage {
   String get servicesAnd => 'الخدمات و ';
 
   @override
-  String get newProfileAddedSuccessfully => 'تمت إضافة الملف الشخصي الجديد بنجاح';
+  String get newProfileAddedSuccessfully =>
+      'تمت إضافة الملف الشخصي الجديد بنجاح';
 
   @override
   String get doYouWantToDeleteYourReview => 'هل تريد حذف رأيك؟';
@@ -965,7 +990,8 @@ class LanguageAr extends BaseLanguage {
   String get searchHistory => 'سجل البحث';
 
   @override
-  String get youHaveBeenLoggedOutOfYourAccountOn => 'لقد تم تسجيل الخروج من حسابك على';
+  String get youHaveBeenLoggedOutOfYourAccountOn =>
+      'لقد تم تسجيل الخروج من حسابك على';
 
   @override
   String get faqs => 'الأسئلة الشائعة';
@@ -1022,7 +1048,8 @@ class LanguageAr extends BaseLanguage {
   String get yourDeviceIsNot => 'جهازك غير مدعوم بالخطة الحالية';
 
   @override
-  String get pleaseUpgradeToContinue => 'يرجى الترقية لمواصلة الاستمتاع بالخدمة';
+  String get pleaseUpgradeToContinue =>
+      'يرجى الترقية لمواصلة الاستمتاع بالخدمة';
 
   @override
   String get cancelled => 'تم الإلغاء';
@@ -1037,10 +1064,12 @@ class LanguageAr extends BaseLanguage {
   String get connectToWIFI => 'يرجى الاتصال بالواي فاي';
 
   @override
-  String get logoutAllConfirmation => 'هل تريد تسجيل الخروج من جميع الأجهزة الأخرى؟';
+  String get logoutAllConfirmation =>
+      'هل تريد تسجيل الخروج من جميع الأجهزة الأخرى؟';
 
   @override
-  String get deviceSupportWithPlan => 'جهازك غير مدعوم بالخطة الحالية. يرجى الترقية لمواصلة الاستمتاع بالخدمة';
+  String get deviceSupportWithPlan =>
+      'جهازك غير مدعوم بالخطة الحالية. يرجى الترقية لمواصلة الاستمتاع بالخدمة';
 
   @override
   String get doYouWantToDeleteProfile => 'هل تريد حذف الملف الشخصي لـ';
@@ -1083,7 +1112,8 @@ class LanguageAr extends BaseLanguage {
   String get loginWithOTP => 'تسجيل الدخول باستخدام OTP';
 
   @override
-  String openTheMobileApp(String appName) => 'افتح تطبيق الهاتف المحمول $appName';
+  String openTheMobileApp(String appName) =>
+      'افتح تطبيق الهاتف المحمول $appName';
 
   @override
   String get youHaveBeenLoggedOutSuccessfully => 'تم تسجيل خروجك بنجاح';
@@ -1110,7 +1140,8 @@ class LanguageAr extends BaseLanguage {
   String get unlockedVideo => 'استئجار الفيديوهات';
 
   @override
-  String get rentToWatch => 'استأجر هذا من تطبيق الهاتف المحمول الخاص بك لمشاهدته';
+  String get rentToWatch =>
+      'استأجر هذا من تطبيق الهاتف المحمول الخاص بك لمشاهدته';
 
   @override
   String get rentRequired => 'الإيجار المطلوب';
@@ -1140,7 +1171,8 @@ class LanguageAr extends BaseLanguage {
   String get advertisement => 'الإعلان';
 
   @override
-  String get castConnectInfo => 'تأكد من تشغيل جهاز Chromecast وتوصيله بنفس شبكة الواي فاي.';
+  String get castConnectInfo =>
+      'تأكد من تشغيل جهاز Chromecast وتوصيله بنفس شبكة الواي فاي.';
 
   @override
   String get connect => 'اتصال';
@@ -1168,5 +1200,6 @@ class LanguageAr extends BaseLanguage {
   String get moreComingSoon => 'المزيد قريباً';
 
   @override
-  String noContentAvailableFor(String tabName) => 'لا يوجد محتوى متاح لـ $tabName';
+  String noContentAvailableFor(String tabName) =>
+      'لا يوجد محتوى متاح لـ $tabName';
 }

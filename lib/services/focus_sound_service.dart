@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' show Directory, File;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +50,11 @@ class FocusSoundService {
 
   /// initialize the focus sound service
   Future<void> init({String? overrideAssetPath}) async {
+    if (kIsWeb) {
+      enabled = false;
+      _initialized = true;
+      return;
+    }
     if (_initialized) return;
     if (overrideAssetPath != null) assetPath = overrideAssetPath;
 
@@ -106,6 +111,7 @@ class FocusSoundService {
   /// Ensures the bundled asset is copied to a temporary local file and returns it.
   /// Reuses a cached file when the asset path hasn't changed; returns `null` on error.
   Future<File?> _ensureLocalAssetFile() async {
+    if (kIsWeb) return null;
     try {
       if (_cachedAssetFile != null && _cachedAssetKey == assetPath) {
         if (await _cachedAssetFile!.exists()) {

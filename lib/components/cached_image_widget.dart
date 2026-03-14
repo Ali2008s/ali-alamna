@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:io' show File;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -122,6 +123,9 @@ class CachedImageWidget extends StatelessWidget {
         errorBuilder: (_, __, ___) => _buildPlaceholder(context),
       ).cornerRadiusWithClipRRect(radius ?? (circle ? (scaledHeight / 2) : 0));
     } else {
+      if (kIsWeb) {
+        return _buildPlaceholder(context);
+      }
       return Image.file(
         File(url),
         height: scaledHeight,

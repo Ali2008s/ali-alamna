@@ -1,5 +1,6 @@
-import 'dart:io';
+import 'dart:io' show File;
 
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -62,7 +63,7 @@ class AuthServiceApis {
     setValue(SharedPreferenceConst.IS_LOGGED_IN, true);
     loginUserData(userData);
     currentSubscription(userData.planDetails);
-    currentSubscription.value.activePlanInAppPurchaseIdentifier = isIOS ? currentSubscription.value.appleInAppPurchaseIdentifier : currentSubscription.value.googleInAppPurchaseIdentifier;
+    currentSubscription.value.activePlanInAppPurchaseIdentifier = (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) ? currentSubscription.value.appleInAppPurchaseIdentifier : currentSubscription.value.googleInAppPurchaseIdentifier;
     setValue(
       SharedPreferenceConst.USER_DATA,
       loginUserData.toJson(),

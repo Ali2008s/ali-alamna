@@ -1,5 +1,6 @@
-import 'dart:io';
 
+
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -18,7 +19,10 @@ class PushNotificationService {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      initializePlatformSpecificNotificationChannel();
+      // flutter_local_notifications لا يعمل على الويب
+      if (!kIsWeb) {
+        initializePlatformSpecificNotificationChannel();
+      }
 
       registerNotificationListeners();
 
@@ -26,9 +30,11 @@ class PushNotificationService {
 
       FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(alert: true, badge: true, sound: true);
 
-      await FirebaseMessaging.instance.subscribeToTopic(appNameTopic).then((value) {
-        log("${FirebaseMsgConst.topicSubscribed}$appNameTopic");
-      });
+      if (!kIsWeb) {
+        await FirebaseMessaging.instance.subscribeToTopic(appNameTopic).then((value) {
+          log("${FirebaseMsgConst.topicSubscribed}$appNameTopic");
+        });
+      }
     }
   }
 
@@ -57,7 +63,7 @@ class PushNotificationService {
   }
 
   Future<void> registerFCMAndTopics() async {
-    if (Platform.isIOS) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
       String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
       if (apnsToken == null) {
         Future.delayed(const Duration(seconds: 3), () async {
@@ -68,17 +74,21 @@ class PushNotificationService {
     }
     FirebaseMessaging.instance.getToken().then((token) {
       log("${FirebaseMsgConst.fcmNotificationTokenKey}\n$token");
-      subScribeToTopic();
+      if (!kIsWeb) {
+        subScribeToTopic();
+      }
     });
   }
 
   Future<void> subScribeToTopic() async {
+    if (kIsWeb) return;
     await FirebaseMessaging.instance.subscribeToTopic("${FirebaseMsgConst.userWithUnderscoreKey}${loginUserData.value.id}").then((value) {
       log("${FirebaseMsgConst.topicSubscribed}${FirebaseMsgConst.userWithUnderscoreKey}${loginUserData.value.id}");
     });
   }
 
   Future<void> unsubscribeFirebaseTopic() async {
+    if (kIsWeb) return;
     await FirebaseMessaging.instance.unsubscribeFromTopic('${FirebaseMsgConst.userWithUnderscoreKey}${loginUserData.value.id}').whenComplete(() {
       log("${FirebaseMsgConst.topicUnSubscribed}${FirebaseMsgConst.userWithUnderscoreKey}${loginUserData.value.id}");
     });

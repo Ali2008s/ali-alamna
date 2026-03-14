@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:nb_utils/nb_utils.dart';
 
 import '../../../utils/constants.dart';
@@ -143,9 +144,9 @@ class ApplicationURL {
 
   ApplicationURL({required this.mobileAppUrl});
 
-  String get applicationURL => isIOS
+  String get applicationURL => (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
       ? mobileAppUrl.appStoreUrl
-      : isAndroid
+      : (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
           ? mobileAppUrl.playstoreUrl
           : "";
 

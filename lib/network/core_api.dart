@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' show File;
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -82,7 +82,7 @@ class CoreServiceApis {
       ),
     );
 
-    setValue(SharedPreferenceConst.CACHE_DASHBOARD, dashboardDetailsResp.data.toJson());
+    setValue(SharedPreferenceConst.CACHE_DASHBOARD, dashboardDetailsResp.toJson());
     return dashboardDetailsResp;
   }
 
@@ -583,7 +583,7 @@ class CoreServiceApis {
     }
 
     if (seasonId > -1) params.add('${ApiRequestKeys.seasonIdKey}=$seasonId');
-    // if (showId > -1) params.add('${ApiRequestKeys.tvShowIdKey}=$showId');
+    if (showId > -1) params.add('${ApiRequestKeys.tvShowIdKey}=$showId');
     ListResponse it = ListResponse.fromJson(
       await handleResponse(
         await buildHttpResponse(

@@ -18,8 +18,15 @@ class PersonController extends GetxController {
   ScrollController scrollController = ScrollController();
   ScrollController innerScrollController = ScrollController();
 
-  Rx<Future<List<PosterDataModel>>> getOriginalMovieListFuture = Future(() => <PosterDataModel>[]).obs;
+  // Movies list
+  Rx<Future<List<PosterDataModel>>> getOriginalMovieListFuture =
+      Future(() => <PosterDataModel>[]).obs;
   RxList<PosterDataModel> originalMovieList = RxList();
+
+  // TV Shows list
+  Rx<Future<List<PosterDataModel>>> getOriginalTvShowListFuture =
+      Future(() => <PosterDataModel>[]).obs;
+  RxList<PosterDataModel> originalTvShowList = RxList();
 
   bool isUiLoaded = false;
 
@@ -29,7 +36,9 @@ class PersonController extends GetxController {
     super.onInit();
     scrollController.addListener(
       () {
-        if (scrollController.position.pixels == scrollController.position.maxScrollExtent && !isLoading.value) {
+        if (scrollController.position.pixels ==
+                scrollController.position.maxScrollExtent &&
+            !isLoading.value) {
           onNextPage();
         }
       },
@@ -49,26 +58,42 @@ class PersonController extends GetxController {
     getPersonMovieDetails();
   }
 
-  ///Get Person Wise Movie List
+  ///Get Person Wise Movie & TV Show List
   Future<void> getPersonMovieDetails({bool showLoader = true}) async {
     if (showLoader) {
       isLoading(true);
     }
-    await getOriginalMovieListFuture(
-      CoreServiceApis.getContentList(
-        page: page.value,
-        type: VideoType.movie,
-        contentList: originalMovieList,
-        params: actorId.value > 0 ? "actor_id=${actorId.value}" : "",
-        lastPageCallBack: (p0) {
-          isLastPage(p0);
-        },
-      ),
-    ).then((value) {
+
+    // Fetch movies
+    final moviesF = CoreServiceApis.getContentList(
+      page: page.value,
+      type: VideoType.movie,
+      contentList: originalMovieList,
+      params: actorId.value > 0 ? "actor_id=${actorId.value}" : "",
+      lastPageCallBack: (p0) {
+        isLastPage(p0);
+      },
+    );
+
+    // Fetch TV shows
+    final tvShowsF = CoreServiceApis.getContentList(
+      page: page.value,
+      type: VideoType.tvshow,
+      contentList: originalTvShowList,
+      params: actorId.value > 0 ? "actor_id=${actorId.value}" : "",
+      lastPageCallBack: (p0) {
+        // Combined last page when both are done
+      },
+    );
+
+    await getOriginalMovieListFuture(moviesF);
+    await getOriginalTvShowListFuture(tvShowsF);
+
+    await Future.wait([moviesF, tvShowsF]).then((results) {
       cachedMovieList = originalMovieList;
-      log('value.length ==> ${value.length}');
+      log('Movies: ${originalMovieList.length}, TvShows: ${originalTvShowList.length}');
     }).catchError((e) {
-      log("getPerson Movie List Err : $e");
+      log("getPerson Content List Err : $e");
     }).whenComplete(() => isLoading(false));
   }
 

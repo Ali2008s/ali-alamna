@@ -215,7 +215,7 @@ class HomeController extends GetxController {
         cachedDashboardDetailResponse!.data.basedOnLastWatchMovieList = oldData.data.basedOnLastWatchMovieList;
       }
 
-      setJsonToLocal(SharedPreferenceConst.CACHE_DASHBOARD, cachedDashboardDetailResponse!.data.toJson());
+      setValue(SharedPreferenceConst.CACHE_DASHBOARD, cachedDashboardDetailResponse!.toJson());
     }).catchError((e) {
       showCategoryShimmer(false);
     });
@@ -229,6 +229,7 @@ class HomeController extends GetxController {
 
     if (isFirstPage) {
       createDashboardFirstSectionList(newDashboardData);
+      createDashboardOtherSectionList(newDashboardData);
     } else {
       createDashboardOtherSectionList(newDashboardData);
     }
@@ -516,35 +517,36 @@ class HomeController extends GetxController {
         index: 18,
       );
 
-      dashboardSectionList.removeWhere((element) => element.isOtherSection);
+    }
 
-      for (final section in dashboard.otherSection) {
-        addOrReplaceSection(
-          targetList: dashboardSectionList,
-          skipIfEmpty: true,
-          newSection: CategoryListModel(
-            name: section.name,
-            sectionType: 'other_section_${section.slug}',
-            data: section.data,
-            showViewAll: true,
-            isOtherSection: true,
-            slug: section.slug,
-            type: section.type,
-          ),
-          index: dashboardSectionList.length + 1,
-        );
-      }
+    dashboardSectionList.removeWhere((element) => element.isOtherSection);
 
-      if (appConfigs.value.enableAds.getBoolInt()) {
-        addOrReplaceSection(
-          targetList: dashboardSectionList,
-          newSection: CategoryListModel(
-            sectionType: DashboardCategoryType.advertisement,
-            data: [],
-          ),
-          index: dashboardSectionList.length + 1,
-        );
-      }
+    for (final section in dashboard.otherSection) {
+      addOrReplaceSection(
+        targetList: dashboardSectionList,
+        skipIfEmpty: true,
+        newSection: CategoryListModel(
+          name: section.name,
+          sectionType: 'other_section_${section.slug}',
+          data: section.data,
+          showViewAll: true,
+          isOtherSection: true,
+          slug: section.slug,
+          type: section.type,
+        ),
+        index: dashboardSectionList.length,
+      );
+    }
+
+    if (appConfigs.value.enableAds.getBoolInt()) {
+      addOrReplaceSection(
+        targetList: dashboardSectionList,
+        newSection: CategoryListModel(
+          sectionType: DashboardCategoryType.advertisement,
+          data: [],
+        ),
+        index: dashboardSectionList.length,
+      );
     }
   }
   ///Add or Replace Section
@@ -555,7 +557,19 @@ class HomeController extends GetxController {
     required int index,
     bool skipIfEmpty = false,
   }) {
-    targetList.add(newSection);
+    if (skipIfEmpty && newSection.data.isEmpty) return;
+
+    final existingIndex = targetList.indexWhere((element) => element.sectionType == newSection.sectionType && element.name == newSection.name);
+
+    if (existingIndex != -1) {
+      targetList[existingIndex] = newSection;
+    } else {
+      if (index >= 0 && index < targetList.length) {
+        targetList.insert(index, newSection);
+      } else {
+        targetList.add(newSection);
+      }
+    }
   }
 
   Future<void> getAppConfigurations(bool forceSync) async {

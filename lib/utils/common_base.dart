@@ -1,9 +1,9 @@
 // ignore_for_file: body_might_complete_normally_catch_error, deprecated_member_use
 
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' show HttpClient, HttpOverrides, SecurityContext, X509Certificate;
 import 'dart:ui' as ui;
-
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -33,9 +33,9 @@ Widget get commonDivider => const Column(
 final fontFamilyWeight700 = GoogleFonts.interTight(fontWeight: FontWeight.w700).fontFamily;
 
 void handleRate() async {
-  if (isIOS) {
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
     if (getStringAsync(APP_APPSTORE_URL).isNotEmpty) launchUrlCustomURL(APP_APPSTORE_URL);
-  } else {
+  } else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     launchUrlCustomURL('$playStoreBaseURL${await getPackageName()}');
   }
 }

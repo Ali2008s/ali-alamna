@@ -23,7 +23,7 @@ import '../../utils/local_storage.dart' as storage;
 import '../../video_players/model/vast_ad_response.dart';
 import '../auth/sign_in/sign_in_screen.dart';
 import '../home/home_screen.dart';
-import '../match_schedule/match_schedule_screen.dart';
+
 import '../search/search_controller.dart';
 import '../unlocked_video/rented_list_screen.dart';
 import 'components/menu.dart';
@@ -99,13 +99,7 @@ class DashboardController extends GetxController {
           type: BottomItem.livetv,
           focusNode: FocusNode(),
           screen: SizedBox()),
-    BottomBarItem(
-        title: () => 'جدول مباريات',
-        icon: Icons.sports_soccer_outlined,
-        activeIcon: Icons.sports_soccer,
-        type: BottomItem.matchSchedule,
-        focusNode: FocusNode(),
-        screen: SizedBox()),
+
     BottomBarItem(
         title: () => locale.value.profile,
         icon: Icons.account_circle_outlined,
@@ -356,12 +350,7 @@ class DashboardController extends GetxController {
         case BottomItem.livetv:
           newScreen = LiveTvScreen();
           break;
-        case BottomItem.matchSchedule:
-          if (Get.isRegistered<MatchScheduleController>()) {
-            Get.delete<MatchScheduleController>(force: true);
-          }
-          newScreen = MatchScheduleScreen();
-          break;
+
         case BottomItem.profile:
           newScreen = isLoggedIn.value ? ProfileScreen() : SignInScreen();
           break;

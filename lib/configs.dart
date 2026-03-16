@@ -4,7 +4,7 @@ import 'package:country_picker/country_picker.dart';
 
 const APP_NAME = 'Streamit';
 const APP_LOGO_URL = '$DOMAIN_URL/img/logo/mini_logo.png';
-const DEFAULT_LANGUAGE = 'en';
+const DEFAULT_LANGUAGE = 'ar';
 const DASHBOARD_AUTO_SLIDER_SECOND = 6000;
 const CUSTOM_AD_AUTO_SLIDER_SECOND_VIDEO = 30000;
 const CUSTOM_AD_AUTO_SLIDER_SECOND_IMAGE = 30000;

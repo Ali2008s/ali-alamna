@@ -158,22 +158,18 @@ class PosterCardComponent extends StatelessWidget {
             if ((event is KeyDownEvent || event is KeyUpEvent) && (event.logicalKey == LogicalKeyboardKey.select || event.logicalKey == LogicalKeyboardKey.enter)) {
               if (isLoading) return KeyEventResult.handled;
               saveSearchResults?.call();
-              doIfLogin(onLoggedIn: () {
-                if ((contentDetail.details.access.toString() == MovieAccess.paidAccess &&
-                    isMoviePaid(requiredPlanLevel: contentDetail.details.requiredPlanLevel)) || !contentDetail.details.isDeviceSupported.getBoolInt()) {
-                  showSubscriptionDialog(
-                      title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
-                } else {
-                  if (contentDetail.details.releaseDate.isNotEmpty &&
-                      isComingSoon(contentDetail.details.releaseDate)) {
-                    ComingSoonController comingSoonCont = Get.put(ComingSoonController());
-                    Get.to(
-                      () => ComingSoonDetailScreen(
-                        comingSoonCont: comingSoonCont,
-                        comingSoonData: ComingSoonModel.fromJson(contentDetail.details.toListJson()),
-                      ),
-                    );
-                  } else {
+              final isFreeContent = contentDetail.details.access.toString() == MovieAccess.freeAccess;
+              if (isFreeContent) {
+                 if (contentDetail.details.releaseDate.isNotEmpty &&
+                        isComingSoon(contentDetail.details.releaseDate)) {
+                      ComingSoonController comingSoonCont = Get.put(ComingSoonController());
+                      Get.to(
+                        () => ComingSoonDetailScreen(
+                          comingSoonCont: comingSoonCont,
+                          comingSoonData: ComingSoonModel.fromJson(contentDetail.details.toListJson()),
+                        ),
+                      );
+                 } else {
                     if (isTopChannel) {
                       Get.to(
                         () => LiveShowDetailsScreen(),
@@ -195,9 +191,49 @@ class PosterCardComponent extends StatelessWidget {
                         Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
                       }
                     }
+                 }
+              } else {
+                doIfLogin(onLoggedIn: () {
+                  if ((contentDetail.details.access.toString() == MovieAccess.paidAccess &&
+                      isMoviePaid(requiredPlanLevel: contentDetail.details.requiredPlanLevel)) || !contentDetail.details.isDeviceSupported.getBoolInt()) {
+                    showSubscriptionDialog(
+                        title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
+                  } else {
+                    if (contentDetail.details.releaseDate.isNotEmpty &&
+                        isComingSoon(contentDetail.details.releaseDate)) {
+                      ComingSoonController comingSoonCont = Get.put(ComingSoonController());
+                      Get.to(
+                        () => ComingSoonDetailScreen(
+                          comingSoonCont: comingSoonCont,
+                          comingSoonData: ComingSoonModel.fromJson(contentDetail.details.toListJson()),
+                        ),
+                      );
+                    } else {
+                      if (isTopChannel) {
+                        Get.to(
+                          () => LiveShowDetailsScreen(),
+                          arguments: ChannelModel(
+                            id: contentDetail.id,
+                            name: contentDetail.details.name,
+                            serverUrl: videoData?.url ?? '',
+                            streamType: videoData?.urlType ?? '',
+                            requiredPlanLevel: contentDetail.details.requiredPlanLevel,
+                          ),
+                        );
+                      } else {
+                        if (contentDetail.details.type == VideoType.movie) {
+                          Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
+                        } else if (contentDetail.details.type == VideoType.tvshow ||
+                            contentDetail.details.type == VideoType.episode) {
+                          Get.to(() => TVShowPreviewScreen(), arguments: contentDetail);
+                        } else if (contentDetail.details.type == VideoType.video) {
+                          Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
+                        }
+                      }
+                    }
                   }
-                }
-              });
+                });
+              }
               return KeyEventResult.handled;
             }
             // Return ignored for unhandled keys to allow back navigation
@@ -221,46 +257,82 @@ class PosterCardComponent extends StatelessWidget {
                 () {
                   if (isLoading) return;
                   saveSearchResults?.call();
-                  doIfLogin(onLoggedIn: () {
-                    if ((contentDetail.details.access.toString() == MovieAccess.paidAccess &&
-                        isMoviePaid(requiredPlanLevel: contentDetail.details.requiredPlanLevel)) || !contentDetail.details.isDeviceSupported.getBoolInt()) {
-                      showSubscriptionDialog(
-                          title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
+                  final isFreeContent = contentDetail.details.access.toString() == MovieAccess.freeAccess;
+                  if (isFreeContent) {
+                    if (contentDetail.details.releaseDate.isNotEmpty &&
+                            isComingSoon(contentDetail.details.releaseDate)) {
+                          ComingSoonController comingSoonCont = Get.put(ComingSoonController());
+                          Get.to(
+                            () => ComingSoonDetailScreen(
+                              comingSoonCont: comingSoonCont,
+                              comingSoonData: ComingSoonModel.fromJson(contentDetail.details.toListJson()),
+                            ),
+                          );
                     } else {
-                      if (contentDetail.details.releaseDate.isNotEmpty &&
-                          isComingSoon(contentDetail.details.releaseDate)) {
-                        ComingSoonController comingSoonCont = Get.put(ComingSoonController());
+                      if (isTopChannel) {
                         Get.to(
-                          () => ComingSoonDetailScreen(
-                            comingSoonCont: comingSoonCont,
-                            comingSoonData: ComingSoonModel.fromJson(contentDetail.details.toListJson()),
+                          () => LiveShowDetailsScreen(),
+                          arguments: ChannelModel(
+                            id: contentDetail.id,
+                            name: contentDetail.details.name,
+                            serverUrl: videoData?.url ?? '',
+                            streamType: videoData?.urlType ?? '',
+                            requiredPlanLevel: contentDetail.details.requiredPlanLevel,
                           ),
                         );
                       } else {
-                        if (isTopChannel) {
-                          Get.to(
-                            () => LiveShowDetailsScreen(),
-                            arguments: ChannelModel(
-                              id: contentDetail.id,
-                              name: contentDetail.details.name,
-                              serverUrl: videoData?.url ?? '',
-                              streamType: videoData?.urlType ?? '',
-                              requiredPlanLevel: contentDetail.details.requiredPlanLevel,
-                            ),
-                          );
-                        } else {
-                          if (contentDetail.details.type == VideoType.movie) {
-                            Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
-                          } else if (contentDetail.details.type == VideoType.tvshow ||
-                              contentDetail.details.type == VideoType.episode) {
-                            Get.to(() => TVShowPreviewScreen(), arguments: contentDetail);
-                          } else if (contentDetail.details.type == VideoType.video) {
-                            Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
-                          }
+                        if (contentDetail.details.type == VideoType.movie) {
+                          Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
+                        } else if (contentDetail.details.type == VideoType.tvshow ||
+                            contentDetail.details.type == VideoType.episode) {
+                          Get.to(() => TVShowPreviewScreen(), arguments: contentDetail);
+                        } else if (contentDetail.details.type == VideoType.video) {
+                          Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
                         }
                       }
                     }
-                  });
+                  } else {
+                    doIfLogin(onLoggedIn: () {
+                      if ((contentDetail.details.access.toString() == MovieAccess.paidAccess &&
+                          isMoviePaid(requiredPlanLevel: contentDetail.details.requiredPlanLevel)) || !contentDetail.details.isDeviceSupported.getBoolInt()) {
+                        showSubscriptionDialog(
+                            title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
+                      } else {
+                        if (contentDetail.details.releaseDate.isNotEmpty &&
+                            isComingSoon(contentDetail.details.releaseDate)) {
+                          ComingSoonController comingSoonCont = Get.put(ComingSoonController());
+                          Get.to(
+                            () => ComingSoonDetailScreen(
+                              comingSoonCont: comingSoonCont,
+                              comingSoonData: ComingSoonModel.fromJson(contentDetail.details.toListJson()),
+                            ),
+                          );
+                        } else {
+                          if (isTopChannel) {
+                            Get.to(
+                              () => LiveShowDetailsScreen(),
+                              arguments: ChannelModel(
+                                id: contentDetail.id,
+                                name: contentDetail.details.name,
+                                serverUrl: videoData?.url ?? '',
+                                streamType: videoData?.urlType ?? '',
+                                requiredPlanLevel: contentDetail.details.requiredPlanLevel,
+                              ),
+                            );
+                          } else {
+                            if (contentDetail.details.type == VideoType.movie) {
+                              Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
+                            } else if (contentDetail.details.type == VideoType.tvshow ||
+                                contentDetail.details.type == VideoType.episode) {
+                              Get.to(() => TVShowPreviewScreen(), arguments: contentDetail);
+                            } else if (contentDetail.details.type == VideoType.video) {
+                              Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
+                            }
+                          }
+                        }
+                      }
+                    });
+                  }
                 },
             child: Obx(
               () {

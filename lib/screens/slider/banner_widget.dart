@@ -177,13 +177,9 @@ class BannerWidget extends StatelessWidget {
   }
 
   void handleWatchNowClick(PosterDataModel data) {
-    doIfLogin(onLoggedIn: () {
-      if (data.details.access == MovieAccess.payPerView && !data.details.hasContentAccess.getBoolInt()) {
-        showSubscriptionDialog(title: locale.value.rentRequired, msg: locale.value.rentToWatch, color: rentedColor);
-      } else if ((data.details.access == MovieAccess.paidAccess && isMoviePaid(requiredPlanLevel: data.details.requiredPlanLevel)) || !data.details.isDeviceSupported.getBoolInt()) {
-        log('isDeviceSupported: ${data.details.isDeviceSupported.getBoolInt()}');
-        showSubscriptionDialog(title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
-      } else {
+    final isFreeContent = data.details.access.toString() == MovieAccess.freeAccess;
+    
+    if (isFreeContent) {
         if (data.details.type == VideoType.tvshow) {
           Get.to(() => TVShowPreviewScreen(), arguments: data.details);
         } else if (data.details.type == VideoType.movie) {
@@ -193,8 +189,26 @@ class BannerWidget extends StatelessWidget {
         } else if (data.details.type == VideoType.liveTv) {
           Get.to(() => LiveShowDetailsScreen(), arguments: data.details);
         }
-      }
-    });
+    } else {
+      doIfLogin(onLoggedIn: () {
+        if (data.details.access == MovieAccess.payPerView && !data.details.hasContentAccess.getBoolInt()) {
+          showSubscriptionDialog(title: locale.value.rentRequired, msg: locale.value.rentToWatch, color: rentedColor);
+        } else if ((data.details.access == MovieAccess.paidAccess && isMoviePaid(requiredPlanLevel: data.details.requiredPlanLevel)) || !data.details.isDeviceSupported.getBoolInt()) {
+          log('isDeviceSupported: ${data.details.isDeviceSupported.getBoolInt()}');
+          showSubscriptionDialog(title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
+        } else {
+          if (data.details.type == VideoType.tvshow) {
+            Get.to(() => TVShowPreviewScreen(), arguments: data.details);
+          } else if (data.details.type == VideoType.movie) {
+            Get.to(() => ContentDetailsScreen(), arguments: data.details);
+          } else if (data.details.type == VideoType.video) {
+            Get.to(() => ContentDetailsScreen(), arguments: data.details);
+          } else if (data.details.type == VideoType.liveTv) {
+            Get.to(() => LiveShowDetailsScreen(), arguments: data.details);
+          }
+        }
+      });
+    }
   }
 }
 
@@ -225,15 +239,8 @@ class SliderPage extends StatelessWidget {
           hasFocus: sliderController.currentSliderPage.value.id == data.id && sliderController.sliderHasFocus.value,
           onTrailerEnded: controller.onTrailerEnded,
           onPosterTap: () {
-            if ((data.details.access == MovieAccess.payPerView || data.details.access == MovieAccess.payPerView) &&
-                !data.details.hasContentAccess.getBoolInt()) {
-              showSubscriptionDialog(
-                  title: locale.value.rentRequired, msg: locale.value.rentToWatch, color: rentedColor);
-            } else if ((data.details.access == MovieAccess.paidAccess &&
-                currentSubscription.value.level < data.details.requiredPlanLevel) || !data.details.isDeviceSupported.getBoolInt()) {
-              showSubscriptionDialog(
-                  title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
-            } else {
+            final isFreeContent = data.details.access.toString() == MovieAccess.freeAccess;
+            if (isFreeContent) {
               if (data.details.type == VideoType.tvshow) {
                 Get.to(() => TVShowPreviewScreen(), arguments: data.details);
               } else if (data.details.type == VideoType.movie) {
@@ -243,6 +250,28 @@ class SliderPage extends StatelessWidget {
               } else if (data.details.type == VideoType.liveTv) {
                 Get.to(() => LiveShowDetailsScreen(), arguments: data.details);
               }
+            } else {
+              doIfLogin(onLoggedIn: () {
+                if ((data.details.access == MovieAccess.payPerView || data.details.access == MovieAccess.payPerView) &&
+                    !data.details.hasContentAccess.getBoolInt()) {
+                  showSubscriptionDialog(
+                      title: locale.value.rentRequired, msg: locale.value.rentToWatch, color: rentedColor);
+                } else if ((data.details.access == MovieAccess.paidAccess &&
+                    currentSubscription.value.level < data.details.requiredPlanLevel) || !data.details.isDeviceSupported.getBoolInt()) {
+                  showSubscriptionDialog(
+                      title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
+                } else {
+                  if (data.details.type == VideoType.tvshow) {
+                    Get.to(() => TVShowPreviewScreen(), arguments: data.details);
+                  } else if (data.details.type == VideoType.movie) {
+                    Get.to(() => ContentDetailsScreen(), arguments: data.details);
+                  } else if (data.details.type == VideoType.video) {
+                    Get.to(() => ContentDetailsScreen(), arguments: data.details);
+                  } else if (data.details.type == VideoType.liveTv) {
+                    Get.to(() => LiveShowDetailsScreen(), arguments: data.details);
+                  }
+                }
+              });
             }
           },
         ));

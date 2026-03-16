@@ -300,6 +300,12 @@ void onSubscriptionLoginCheck({
   String? title,
 }) {
   LiveStream().emit(podPlayerPauseKey);
+  
+  if (videoAccess == MovieAccess.freeAccess) {
+    callBack.call();
+    return;
+  }
+  
   if (isLoggedIn.value) {
     if (planId == 0 && planLevel == 0 && isFromSubscribeCard) {
       //This is to launch subscription screen when not to navigate from origin
@@ -307,9 +313,7 @@ void onSubscriptionLoginCheck({
           title: locale.value.subscriptionRequired,
           msg: locale.value.pleaseSubscribeOrUpgrade);
     } else {
-      if (videoAccess == MovieAccess.freeAccess) {
-        callBack.call();
-      } else if (currentSubscription.value.level >= planLevel &&
+      if (currentSubscription.value.level >= planLevel &&
           isSupportedDevice.value) {
         callBack.call();
       } else {

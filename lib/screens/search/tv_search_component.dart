@@ -52,6 +52,18 @@ class TVSearchController extends GetxController {
         .toList(),
   ).toList();
 
+  final List<List<KeyboardKeyModel>> arabicKeyboard = [
+    ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ'],
+    ['د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص'],
+    ['ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق'],
+    ['ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'],
+    ['ء', 'أ', 'إ', 'ى', 'ة', 'ئ', 'ؤ'],
+  ].map(
+    (row) => row
+        .map((char) => KeyboardKeyModel(text: char))
+        .toList(),
+  ).toList();
+
   final List<List<KeyboardKeyModel>> numberSymbolKeyboard = [
     ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
     ['@', '#', '\$', '%', '&', '*', '(', ')', '_', '+'],
@@ -62,6 +74,8 @@ class TVSearchController extends GetxController {
         .map((char) => KeyboardKeyModel(text: char))
         .toList(),
   ).toList();
+
+  RxInt keyboardMode = 0.obs; // 0: Arabic, 1: English, 2: Symbols
 
 
   @override
@@ -122,7 +136,7 @@ class TVSearchController extends GetxController {
   }
 
   void toggleSymbols() {
-    showSymbols.value = !showSymbols.value;
+    keyboardMode.value = (keyboardMode.value + 1) % 3;
   }
 }
 
@@ -438,9 +452,11 @@ class TVSearchComponent extends StatelessWidget {
                               // Grid area
                               ConstrainedBox(
                                 constraints: BoxConstraints(maxWidth: gridWidth),
-                                child: Obx(() {
-                                  final rows = getxCont.showSymbols.value ? getxCont.numberSymbolKeyboard : getxCont.alphabetKeyboard;
-                                  final keys = rows.expand((r) => r).toList();
+                                  child: Obx(() {
+                                    final rows = getxCont.keyboardMode.value == 0 
+                                      ? getxCont.arabicKeyboard 
+                                      : (getxCont.keyboardMode.value == 1 ? getxCont.alphabetKeyboard : getxCont.numberSymbolKeyboard);
+                                    final keys = rows.expand((r) => r).toList();
                                   return Wrap(
                                     spacing: gridSpacing,
                                     runSpacing: gridSpacing,
@@ -452,7 +468,7 @@ class TVSearchComponent extends StatelessWidget {
                                           focusNode: keys[i].focusNode,
                                           width: keyWidth.clamp(20, 45),
                                           height: keyHeight.clamp(18, 32),
-                                          onKeyEvent: i % 6 == 0 ? (node, event) {
+                                          onKeyEvent: i % 7 == 0 ? (node, event) {
                                             if (event is KeyDownEvent) {
                                               if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
                                                 if(searchCont.searchListData.isNotEmpty) {
@@ -470,7 +486,7 @@ class TVSearchComponent extends StatelessWidget {
                                               }
                                             }
                                             return KeyEventResult.ignored;
-                                          } : (i + 6) > keys.length ? (node, event) {
+                                          } : (i + 7) > keys.length ? (node, event) {
                                             if (event is KeyDownEvent) {
                                               if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
                                                 if(searchCont.searchMovieDetails.isNotEmpty) {
@@ -497,7 +513,7 @@ class TVSearchComponent extends StatelessWidget {
                                     _buildKeyboardButton('⌫', getxCont.onBackspace, fontSize: 14, width: actionColMaxWidth, height: keyHeight.clamp(18, 28)),
                                     Obx(
                                       () {
-                                        return _buildKeyboardButton(getxCont.showSymbols.value ? '&ABC' : '&123', getxCont.toggleSymbols, width: actionColMaxWidth, height: keyHeight.clamp(18, 28));
+                                        return _buildKeyboardButton(getxCont.keyboardMode.value == 0 ? 'ABC' : (getxCont.keyboardMode.value == 1 ? '&123' : 'عربي'), getxCont.toggleSymbols, width: actionColMaxWidth, height: keyHeight.clamp(18, 28));
                                       }
                                     ),
                                     _buildKeyboardButton('SPACE', getxCont.onSpace, width: actionColMaxWidth, height: keyHeight.clamp(18, 28)),

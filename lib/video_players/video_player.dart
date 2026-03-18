@@ -66,31 +66,40 @@ class VideoPlayersComponent extends StatelessWidget {
 
   bool get isLive => liveShowModel != null && liveShowModel!.id > 0;
 
-  bool get isVideoType => videoModel.type.toLowerCase() == VideoType.video.toLowerCase();
+  bool get isVideoType =>
+      videoModel.type.toLowerCase() == VideoType.video.toLowerCase();
 
   bool isVideoTypeYoutube(VideoPlayersController controller) => isLive
       ? liveShowModel?.streamType == PlayerTypes.youtube.toLowerCase()
-      : (controller.videoUrlType.toLowerCase() == PlayerTypes.youtube.toLowerCase());
+      : (controller.videoUrlType.toLowerCase() ==
+          PlayerTypes.youtube.toLowerCase());
 
   bool isVideoTypeX265(VideoPlayersController controller) =>
       controller.videoUrlType.toLowerCase() == PlayerTypes.x265.toLowerCase();
 
   bool isVideoTypeOther(VideoPlayersController controller) =>
       (controller.videoUrlType.toLowerCase() == PlayerTypes.url.toLowerCase() ||
-          controller.videoUrlType.toLowerCase() == PlayerTypes.hls.toLowerCase() ||
-          controller.videoUrlType.toLowerCase() == PlayerTypes.local.toLowerCase());
+          controller.videoUrlType.toLowerCase() ==
+              PlayerTypes.hls.toLowerCase() ||
+          controller.videoUrlType.toLowerCase() ==
+              PlayerTypes.local.toLowerCase());
 
   bool isVimeo(VideoPlayersController controller) =>
-      (controller.videoUrlType.toLowerCase() == PlayerTypes.vimeo.toLowerCase() ||
+      (controller.videoUrlType.toLowerCase() ==
+              PlayerTypes.vimeo.toLowerCase() ||
           videoModel.videoUrlInput.contains(PlayerTypes.vimeo));
 
   bool isWebView(VideoPlayersController controller) =>
-      isVimeo(controller) || (controller.videoUrlType.toLowerCase() == PlayerTypes.embedded.toLowerCase());
+      isVimeo(controller) ||
+      (controller.videoUrlType.toLowerCase() ==
+          PlayerTypes.embedded.toLowerCase());
 
   bool showSkip(VideoPlayersController controller) {
     // Never show trailer skip when type is video
     if (isVideoType) {
-      return controller.hasNextVideo.value && !controller.isBuffering.value && controller.playNextVideo.value;
+      return controller.hasNextVideo.value &&
+          !controller.isBuffering.value &&
+          controller.playNextVideo.value;
     }
 
     return isTrailer
@@ -180,14 +189,18 @@ class VideoPlayersComponent extends StatelessWidget {
                               Container(
                                 height: Get.height,
                                 width: Get.width,
-                                decoration: boxDecorationDefault(color: context.cardColor, borderRadius: radius(0)),
+                                decoration: boxDecorationDefault(
+                                    color: context.cardColor,
+                                    borderRadius: radius(0)),
                               ),
                             LoaderWidget(),
                           ],
                         ),
                       )
                     else if (!controller.isTrailer.value &&
-                        isMoviePaid(requiredPlanLevel: videoModel.details.requiredPlanLevel))
+                        isMoviePaid(
+                            requiredPlanLevel:
+                                videoModel.details.requiredPlanLevel))
                       SizedBox(
                         height: Get.height,
                         width: Get.width,
@@ -207,22 +220,26 @@ class VideoPlayersComponent extends StatelessWidget {
                                   : Container(
                                       height: Get.height,
                                       width: Get.width,
-                                      decoration:
-                                          boxDecorationDefault(color: context.cardColor, borderRadius: radius(0)),
+                                      decoration: boxDecorationDefault(
+                                          color: context.cardColor,
+                                          borderRadius: radius(0)),
                                     ),
                             ),
                             Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(locale.value.subscriptionRequired, style: boldTextStyle()),
+                                Text(locale.value.subscriptionRequired,
+                                    style: boldTextStyle()),
                                 Text(
                                   locale.value.pleaseSubscribeOrUpgrade,
                                   style: secondaryTextStyle(),
                                 ),
                                 Focus(
                                   onKeyEvent: (node, event) {
-                                    if (event.logicalKey == LogicalKeyboardKey.select ||
-                                        event.logicalKey == LogicalKeyboardKey.enter) {
+                                    if (event.logicalKey ==
+                                            LogicalKeyboardKey.select ||
+                                        event.logicalKey ==
+                                            LogicalKeyboardKey.enter) {
                                       Get.back();
                                       return KeyEventResult.handled;
                                     }
@@ -235,13 +252,15 @@ class VideoPlayersComponent extends StatelessWidget {
                                       Get.back();
                                     },
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20, vertical: 8),
                                       decoration: BoxDecoration(
                                         color: appColorPrimary,
                                         border: focusBorder(true),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: Text(locale.value.ok, style: primaryTextStyle()),
+                                      child: Text(locale.value.ok,
+                                          style: primaryTextStyle()),
                                     ),
                                   ),
                                 ),
@@ -250,8 +269,10 @@ class VideoPlayersComponent extends StatelessWidget {
                           ],
                         ),
                       )
-                    else if (videoModel.details.access == MovieAccess.payPerView &&
-                        videoModel.details.hasContentAccess.getBoolInt() == false &&
+                    else if (videoModel.details.access ==
+                            MovieAccess.payPerView &&
+                        videoModel.details.hasContentAccess.getBoolInt() ==
+                            false &&
                         !controller.isTrailer.value)
                       SizedBox(
                         height: Get.height,
@@ -272,14 +293,16 @@ class VideoPlayersComponent extends StatelessWidget {
                                   : Container(
                                       height: Get.height,
                                       width: Get.width,
-                                      decoration:
-                                          boxDecorationDefault(color: context.cardColor, borderRadius: radius(0)),
+                                      decoration: boxDecorationDefault(
+                                          color: context.cardColor,
+                                          borderRadius: radius(0)),
                                     ),
                             ),
                             Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(locale.value.rentRequired, style: boldTextStyle()),
+                                Text(locale.value.rentRequired,
+                                    style: boldTextStyle()),
                                 Text(
                                   locale.value.rentToWatch,
                                   style: secondaryTextStyle(),
@@ -287,8 +310,10 @@ class VideoPlayersComponent extends StatelessWidget {
                                 Focus(
                                   onKeyEvent: (node, event) {
                                     if (event is KeyDownEvent) {
-                                      if (event.logicalKey == LogicalKeyboardKey.select ||
-                                          event.logicalKey == LogicalKeyboardKey.enter) {
+                                      if (event.logicalKey ==
+                                              LogicalKeyboardKey.select ||
+                                          event.logicalKey ==
+                                              LogicalKeyboardKey.enter) {
                                         Get.back();
                                         return KeyEventResult.handled;
                                       }
@@ -302,13 +327,15 @@ class VideoPlayersComponent extends StatelessWidget {
                                       Get.back();
                                     },
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 20, vertical: 8),
                                       decoration: BoxDecoration(
                                         color: appColorPrimary,
                                         border: focusBorder(true),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: Text(locale.value.ok, style: primaryTextStyle()),
+                                      child: Text(locale.value.ok,
+                                          style: primaryTextStyle()),
                                     ),
                                   ),
                                 ),
@@ -341,7 +368,8 @@ class VideoPlayersComponent extends StatelessWidget {
                             right: 32,
                             bottom: 68,
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
                               child: Text(
                                 controller.currentSubtitle.value,
                                 textAlign: TextAlign.center,
@@ -361,16 +389,22 @@ class VideoPlayersComponent extends StatelessWidget {
                               children: [
                                 Obx(
                                   () {
-                                    if ((controller.isTrailer.value && isTrailer) && !isLive && !isVideoType) {
+                                    if ((controller.isTrailer.value &&
+                                            isTrailer) &&
+                                        !isLive &&
+                                        !isVideoType) {
                                       return Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 4),
                                         decoration: boxDecorationDefault(
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
                                           color: btnColor,
                                         ),
                                         child: Text(
                                           locale.value.trailer,
-                                          style: secondaryTextStyle(color: white),
+                                          style:
+                                              secondaryTextStyle(color: white),
                                         ),
                                       );
                                     } else {
@@ -378,9 +412,11 @@ class VideoPlayersComponent extends StatelessWidget {
                                     }
                                   },
                                 ),
-                                if (videoModel.details.access == MovieAccess.payPerView)
+                                if (videoModel.details.access ==
+                                    MovieAccess.payPerView)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 4),
                                     decoration: boxDecorationDefault(
                                       borderRadius: BorderRadius.circular(4),
                                       color: rentedColor,
@@ -395,8 +431,11 @@ class VideoPlayersComponent extends StatelessWidget {
                                           color: Colors.white,
                                         ),
                                         Text(
-                                          videoModel.isPurchased ? locale.value.rented : locale.value.rent,
-                                          style: secondaryTextStyle(color: white),
+                                          videoModel.isPurchased
+                                              ? locale.value.rented
+                                              : locale.value.rent,
+                                          style:
+                                              secondaryTextStyle(color: white),
                                         ),
                                       ],
                                     ),
@@ -407,8 +446,10 @@ class VideoPlayersComponent extends StatelessWidget {
                           Positioned.fill(
                             child: AnimatedOpacity(
                               duration: Duration(milliseconds: 150),
-                              opacity:
-                                  controller.isProgressBarVisible.value && controller.showSubtitleOptions.value ? 1 : 0,
+                              opacity: controller.isProgressBarVisible.value &&
+                                      controller.showSubtitleOptions.value
+                                  ? 1
+                                  : 0,
                               child: Container(
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(
@@ -422,17 +463,22 @@ class VideoPlayersComponent extends StatelessWidget {
                                   ),
                                 ),
                                 padding: EdgeInsets.all(16),
-                                child: SubtitleListComponent(controller: controller),
+                                child: SubtitleListComponent(
+                                    controller: controller),
                               ),
                             ),
-                          ).visible(!isLive && !controller.isTrailer.value && !isFromDownloads),
+                          ).visible(!isLive &&
+                              !controller.isTrailer.value &&
+                              !isFromDownloads),
                           Positioned.fill(
                             child: Obx(
                               () => AnimatedOpacity(
                                 duration: Duration(milliseconds: 150),
-                                opacity: controller.isProgressBarVisible.value && controller.showQualityOptions.value
-                                    ? 1
-                                    : 0,
+                                opacity:
+                                    controller.isProgressBarVisible.value &&
+                                            controller.showQualityOptions.value
+                                        ? 1
+                                        : 0,
                                 child: Container(
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
@@ -452,7 +498,9 @@ class VideoPlayersComponent extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          ).visible(!isLive && !controller.isTrailer.value && !isFromDownloads),
+                          ).visible(!isLive &&
+                              !controller.isTrailer.value &&
+                              !isFromDownloads),
 
                           /// Overlay Ad Widget
                           Positioned(
@@ -460,7 +508,8 @@ class VideoPlayersComponent extends StatelessWidget {
                             right: 20,
                             child: Obx(
                               () {
-                                final overlayAd = controller.currentOverlayAd.value;
+                                final overlayAd =
+                                    controller.currentOverlayAd.value;
                                 return overlayAd != null
                                     ? OverlayAdWidget(
                                         overlayAd: overlayAd,
@@ -468,14 +517,17 @@ class VideoPlayersComponent extends StatelessWidget {
                                     : const SizedBox.shrink();
                               },
                             ),
-                          ).visible(!isLive && !controller.isTrailer.value && !isFromDownloads),
+                          ).visible(!isLive &&
+                              !controller.isTrailer.value &&
+                              !isFromDownloads),
                         ],
                       )
                     else
                       Obx(
                         () {
                           // Check if video URL or type is empty - might be loading
-                          final isEmpty = controller.videoUrl.value.isEmpty || controller.videoUrlType.value.isEmpty;
+                          final isEmpty = controller.videoUrl.value.isEmpty ||
+                              controller.videoUrlType.value.isEmpty;
                           final isInitializing = controller.isBuffering.value ||
                               controller.isInitializingPlayer.value ||
                               controller.isLoading.value ||
@@ -500,8 +552,9 @@ class VideoPlayersComponent extends StatelessWidget {
                                     Container(
                                       height: Get.height,
                                       width: Get.width,
-                                      decoration:
-                                          boxDecorationDefault(color: context.cardColor, borderRadius: radius(0)),
+                                      decoration: boxDecorationDefault(
+                                          color: context.cardColor,
+                                          borderRadius: radius(0)),
                                     ),
                                   LoaderWidget(),
                                 ],
@@ -521,7 +574,8 @@ class VideoPlayersComponent extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.error_outline_rounded, size: 34, color: white),
+                                const Icon(Icons.error_outline_rounded,
+                                    size: 34, color: white),
                                 10.height,
                                 Text(
                                   locale.value.videoNotFound,
@@ -536,7 +590,9 @@ class VideoPlayersComponent extends StatelessWidget {
                   Obx(
                     () => Align(
                       alignment: Alignment.center,
-                      child: controller.isLoading.value ? LoaderWidget() : Offstage(),
+                      child: controller.isLoading.value
+                          ? LoaderWidget()
+                          : Offstage(),
                     ),
                   ),
                   _adView(controller)
@@ -571,14 +627,16 @@ class VideoPlayersComponent extends StatelessWidget {
                         () => controller.isBuffering.value
                             ? Center(
                                 child: LoaderWidget(
-                                  loaderColor: appColorPrimary.withValues(alpha: 0.4),
+                                  loaderColor:
+                                      appColorPrimary.withValues(alpha: 0.4),
                                 ),
                               )
                             : Offstage(),
                       ),
                     ),
                     Obx(() {
-                      final isVisible = showSkip(controller) && !controller.isLoading.value;
+                      final isVisible =
+                          showSkip(controller) && !controller.isLoading.value;
                       return buildSkipOrNextButton(
                         controller: controller,
                         isVisible: isVisible,
@@ -603,15 +661,16 @@ class VideoPlayersComponent extends StatelessWidget {
                       controller: controller.youtubePlayerController.value,
                       progressIndicatorColor: appColorPrimary,
                       width: Get.width,
-                      thumbnail:
-                          getVideoURLLink(controller).isNotEmpty && !getVideoURLLink(controller).contains("/data/user")
-                              ? CachedImageWidget(
-                                  url: getVideoURLLink(controller),
-                                  fit: BoxFit.cover,
-                                  width: Get.width,
-                                  height: 220,
-                                )
-                              : null,
+                      thumbnail: getVideoURLLink(controller).isNotEmpty &&
+                              !getVideoURLLink(controller)
+                                  .contains("/data/user")
+                          ? CachedImageWidget(
+                              url: getVideoURLLink(controller),
+                              fit: BoxFit.cover,
+                              width: Get.width,
+                              height: 220,
+                            )
+                          : null,
                       aspectRatio: 16 / 9,
                       bottomActions: [],
                       topActions: [],
@@ -630,7 +689,8 @@ class VideoPlayersComponent extends StatelessWidget {
                       },
                     ),
                     Obx(() {
-                      final isVisible = showSkip(controller) && !controller.isLoading.value;
+                      final isVisible =
+                          showSkip(controller) && !controller.isLoading.value;
 
                       if (!isVisible) return const SizedBox();
 
@@ -641,9 +701,12 @@ class VideoPlayersComponent extends StatelessWidget {
                             // Request focus when button becomes visible for trailer
                             if (!controller.skipNextVideoFocusNode.hasFocus) {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (controller.skipNextVideoFocusNode.canRequestFocus &&
-                                    !controller.skipNextVideoFocusNode.hasFocus) {
-                                  controller.skipNextVideoFocusNode.requestFocus();
+                                if (controller.skipNextVideoFocusNode
+                                        .canRequestFocus &&
+                                    !controller
+                                        .skipNextVideoFocusNode.hasFocus) {
+                                  controller.skipNextVideoFocusNode
+                                      .requestFocus();
                                   controller.isSkipNextFocused(true);
                                 }
                               });
@@ -658,7 +721,8 @@ class VideoPlayersComponent extends StatelessWidget {
                                   Focus(
                                     autofocus: true,
                                     canRequestFocus: true,
-                                    focusNode: controller.skipNextVideoFocusNode,
+                                    focusNode:
+                                        controller.skipNextVideoFocusNode,
                                     onFocusChange: (value) {
                                       controller.isSkipNextFocused(value);
                                     },
@@ -668,14 +732,18 @@ class VideoPlayersComponent extends StatelessWidget {
                                     },
                                     child: TextButton(
                                       style: ButtonStyle(
-                                        padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+                                        padding: const WidgetStatePropertyAll(
+                                            EdgeInsets.zero),
                                         visualDensity: VisualDensity.compact,
                                         shape: WidgetStatePropertyAll(
                                           RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(22),
+                                            borderRadius:
+                                                BorderRadius.circular(22),
                                             side: BorderSide(
-                                              color:
-                                                  controller.isSkipNextFocused.value ? appColorPrimary : Colors.white54,
+                                              color: controller
+                                                      .isSkipNextFocused.value
+                                                  ? appColorPrimary
+                                                  : Colors.white54,
                                             ),
                                           ),
                                         ),
@@ -686,7 +754,10 @@ class VideoPlayersComponent extends StatelessWidget {
                                       child: Text(
                                         locale.value.lblSkip,
                                         style: primaryTextStyle(
-                                          color: controller.isSkipNextFocused.value ? appColorPrimary : white,
+                                          color:
+                                              controller.isSkipNextFocused.value
+                                                  ? appColorPrimary
+                                                  : white,
                                         ),
                                       ).paddingSymmetric(horizontal: 16),
                                     ),
@@ -698,9 +769,11 @@ class VideoPlayersComponent extends StatelessWidget {
                         );
                       } else {
                         //  Next Episode case → show Thumbnail component
-                        final thumbnailController = Get.put(ThumbnailController());
+                        final thumbnailController =
+                            Get.put(ThumbnailController());
 
-                        thumbnailController.onParentVisibilityChanged(isVisible, () {
+                        thumbnailController.onParentVisibilityChanged(isVisible,
+                            () {
                           // controller.onWatchNextVideo?.call();
                         });
 
@@ -727,7 +800,8 @@ class VideoPlayersComponent extends StatelessWidget {
                                 thumbnailImage: nextEpisodeThumbnailImage,
                                 nextEpisodeName: nextEpisodeTitle,
                                 nextEpisodeNumber: nextEpisodeIndex,
-                                isSkipNextFocused: controller.isSkipNextFocused.value,
+                                isSkipNextFocused:
+                                    controller.isSkipNextFocused.value,
                               ),
                             ),
                           ),
@@ -741,7 +815,10 @@ class VideoPlayersComponent extends StatelessWidget {
                       child: Obx(() {
                         return AnimatedOpacity(
                           duration: Duration(milliseconds: 150),
-                          opacity: controller.isProgressBarVisible.value && controller.isVideoPlaying.value ? 1 : 0,
+                          opacity: controller.isProgressBarVisible.value &&
+                                  controller.isVideoPlaying.value
+                              ? 1
+                              : 0,
                           child: CommonProgressBar(controller: controller),
                         );
                       }),
@@ -767,7 +844,9 @@ class VideoPlayersComponent extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(0),
                   child: Obx(
-                    () => controller.podPlayerController.value.videoUrl?.isEmpty ?? false
+                    () => controller
+                                .podPlayerController.value.videoUrl?.isEmpty ??
+                            false
                         ? Container(
                             width: Get.width,
                             decoration: boxDecorationDefault(
@@ -778,7 +857,8 @@ class VideoPlayersComponent extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.error_outline_rounded, size: 34, color: white),
+                                const Icon(Icons.error_outline_rounded,
+                                    size: 34, color: white),
                                 10.height,
                                 Text(
                                   locale.value.videoNotFound,
@@ -795,11 +875,15 @@ class VideoPlayersComponent extends StatelessWidget {
                                 matchFrameAspectRatioToVideo: true,
                                 overlayBuilder: (options) => Offstage(),
                                 hideFullScreenButton: true,
-                                controller: controller.podPlayerController.value,
-                                videoThumbnail: getVideoURLLink(controller).isNotEmpty &&
-                                        !getVideoURLLink(controller).contains("/data/user")
+                                controller:
+                                    controller.podPlayerController.value,
+                                videoThumbnail: getVideoURLLink(controller)
+                                            .isNotEmpty &&
+                                        !getVideoURLLink(controller)
+                                            .contains("/data/user")
                                     ? DecorationImage(
-                                        image: NetworkImage(getVideoURLLink(controller)),
+                                        image: NetworkImage(
+                                            getVideoURLLink(controller)),
                                         fit: BoxFit.cover,
                                         colorFilter: ColorFilter.mode(
                                           Colors.black.withValues(alpha: 0.4),
@@ -815,14 +899,18 @@ class VideoPlayersComponent extends StatelessWidget {
                                     ),
                                     alignment: Alignment.center,
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        const Icon(Icons.error_outline_rounded, size: 34, color: white),
+                                        const Icon(Icons.error_outline_rounded,
+                                            size: 34, color: white),
                                         10.height,
                                         Text(
                                           locale.value.videoNotFound,
-                                          style: boldTextStyle(size: 16, color: white),
+                                          style: boldTextStyle(
+                                              size: 16, color: white),
                                         ),
                                       ],
                                     ),
@@ -830,17 +918,20 @@ class VideoPlayersComponent extends StatelessWidget {
                                 },
                                 onLoading: (context) {
                                   return LoaderWidget(
-                                    loaderColor: appColorPrimary.withValues(alpha: 0.4),
+                                    loaderColor:
+                                        appColorPrimary.withValues(alpha: 0.4),
                                   );
                                 },
                               ),
                               Obx(() {
-                                final isVisible = showSkip(controller) && !controller.isLoading.value;
+                                final isVisible = showSkip(controller) &&
+                                    !controller.isLoading.value;
 
                                 return buildSkipOrNextButton(
                                   controller: controller,
                                   isVisible: isVisible,
-                                  nextEpisodeThumbnailImage: nextEpisodeThumbnailImage,
+                                  nextEpisodeThumbnailImage:
+                                      nextEpisodeThumbnailImage,
                                   nextEpisodeTitle: nextEpisodeTitle,
                                   nextEpisodeIndex: nextEpisodeIndex,
                                 );
@@ -852,10 +943,13 @@ class VideoPlayersComponent extends StatelessWidget {
                                 child: Obx(
                                   () => AnimatedOpacity(
                                     duration: Duration(milliseconds: 150),
-                                    opacity: controller.isProgressBarVisible.value && controller.isVideoPlaying.value
-                                        ? 1
-                                        : 0,
-                                    child: CommonProgressBar(controller: controller),
+                                    opacity:
+                                        controller.isProgressBarVisible.value &&
+                                                controller.isVideoPlaying.value
+                                            ? 1
+                                            : 0,
+                                    child: CommonProgressBar(
+                                        controller: controller),
                                   ),
                                 ),
                               )
@@ -882,104 +976,127 @@ class VideoPlayersComponent extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(0),
                   child: Obx(
-                    () => !controller.podPlayerController.value.isInitialised ? SizedBox.shrink() : (controller.podPlayerController.value.videoUrl?.isEmpty ?? false)
-                        ? Container(
-                            width: Get.width,
-                            decoration: boxDecorationDefault(
-                              color: appScreenBackgroundDark,
-                            ),
-                            alignment: Alignment.center,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.error_outline_rounded, size: 34, color: white),
-                                10.height,
-                                Text(
-                                  locale.value.videoNotFound,
-                                  style: boldTextStyle(size: 16, color: white),
+                    () => !controller.podPlayerController.value.isInitialised
+                        ? SizedBox.shrink()
+                        : (controller.podPlayerController.value.videoUrl
+                                    ?.isEmpty ??
+                                false)
+                            ? Container(
+                                width: Get.width,
+                                decoration: boxDecorationDefault(
+                                  color: appScreenBackgroundDark,
                                 ),
-                              ],
-                            ),
-                          )
-                        : Stack(
-                            children: [
-                              PodVideoPlayer(
-                                key: controller.uniqueKey,
-                                alwaysShowProgressBar: false,
-                                matchFrameAspectRatioToVideo: true,
-                                overlayBuilder: (options) => Offstage(),
-                                hideFullScreenButton: true,
-                                controller: controller.podPlayerController.value,
-                                videoThumbnail: getVideoURLLink(controller).isNotEmpty &&
-                                        !getVideoURLLink(controller).contains("/data/user")
-                                    ? DecorationImage(
-                                        image: NetworkImage(getVideoURLLink(controller)),
-                                        fit: BoxFit.cover,
-                                        colorFilter: ColorFilter.mode(
-                                          Colors.black.withValues(alpha: 0.4),
-                                          BlendMode.darken,
-                                        ),
-                                      )
-                                    : null,
-                                onVideoError: () {
-                                  return Container(
-                                    width: Get.width,
-                                    decoration: boxDecorationDefault(
-                                      color: appScreenBackgroundDark,
+                                alignment: Alignment.center,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.error_outline_rounded,
+                                        size: 34, color: white),
+                                    10.height,
+                                    Text(
+                                      locale.value.videoNotFound,
+                                      style:
+                                          boldTextStyle(size: 16, color: white),
                                     ),
-                                    alignment: Alignment.center,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(Icons.error_outline_rounded, size: 34, color: white),
-                                        10.height,
-                                        Text(
-                                          locale.value.videoNotFound,
-                                          style: boldTextStyle(size: 16, color: white),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                                onLoading: (context) {
-                                  return LoaderWidget(
-                                    loaderColor: appColorPrimary.withValues(alpha: 0.4),
-                                  );
-                                },
-                              ),
-                              Obx(() {
-                                final isVisible = showSkip(controller) && !controller.isLoading.value;
-
-                                return buildSkipOrNextButton(
-                                  controller: controller,
-                                  isVisible: isVisible,
-                                  nextEpisodeThumbnailImage: nextEpisodeThumbnailImage,
-                                  nextEpisodeTitle: nextEpisodeTitle,
-                                  nextEpisodeIndex: nextEpisodeIndex,
-                                );
-                              }),
-                              Positioned(
-                                bottom: 8,
-                                left: 8,
-                                right: 8,
-                                child: Obx(
-                                  () => AnimatedOpacity(
-                                    duration: Duration(milliseconds: 150),
-                                    opacity: controller.isProgressBarVisible.value && controller.isVideoPlaying.value
-                                        ? 1
-                                        : 0,
-                                    child: CommonProgressBar(controller: controller),
-                                  ),
+                                  ],
                                 ),
                               )
-                            ],
-                          ),
+                            : Stack(
+                                children: [
+                                  PodVideoPlayer(
+                                    key: controller.uniqueKey,
+                                    alwaysShowProgressBar: false,
+                                    matchFrameAspectRatioToVideo: true,
+                                    overlayBuilder: (options) => Offstage(),
+                                    hideFullScreenButton: true,
+                                    controller:
+                                        controller.podPlayerController.value,
+                                    videoThumbnail: getVideoURLLink(controller)
+                                                .isNotEmpty &&
+                                            !getVideoURLLink(controller)
+                                                .contains("/data/user")
+                                        ? DecorationImage(
+                                            image: NetworkImage(
+                                                getVideoURLLink(controller)),
+                                            fit: BoxFit.cover,
+                                            colorFilter: ColorFilter.mode(
+                                              Colors.black
+                                                  .withValues(alpha: 0.4),
+                                              BlendMode.darken,
+                                            ),
+                                          )
+                                        : null,
+                                    onVideoError: () {
+                                      return Container(
+                                        width: Get.width,
+                                        decoration: boxDecorationDefault(
+                                          color: appScreenBackgroundDark,
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(
+                                                Icons.error_outline_rounded,
+                                                size: 34,
+                                                color: white),
+                                            10.height,
+                                            Text(
+                                              locale.value.videoNotFound,
+                                              style: boldTextStyle(
+                                                  size: 16, color: white),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                    onLoading: (context) {
+                                      return LoaderWidget(
+                                        loaderColor: appColorPrimary.withValues(
+                                            alpha: 0.4),
+                                      );
+                                    },
+                                  ),
+                                  Obx(() {
+                                    final isVisible = showSkip(controller) &&
+                                        !controller.isLoading.value;
+
+                                    return buildSkipOrNextButton(
+                                      controller: controller,
+                                      isVisible: isVisible,
+                                      nextEpisodeThumbnailImage:
+                                          nextEpisodeThumbnailImage,
+                                      nextEpisodeTitle: nextEpisodeTitle,
+                                      nextEpisodeIndex: nextEpisodeIndex,
+                                    );
+                                  }),
+                                  Positioned(
+                                    bottom: 8,
+                                    left: 8,
+                                    right: 8,
+                                    child: Obx(
+                                      () => AnimatedOpacity(
+                                        duration: Duration(milliseconds: 150),
+                                        opacity: controller.isProgressBarVisible
+                                                    .value &&
+                                                controller.isVideoPlaying.value
+                                            ? 1
+                                            : 0,
+                                        child: CommonProgressBar(
+                                            controller: controller),
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
                   ),
                 ),
               ),
-          /* else
+            /* else
               Container(
                 width: Get.width,
                 decoration: boxDecorationDefault(
@@ -1020,13 +1137,16 @@ class VideoPlayersComponent extends StatelessWidget {
                       },
                       child: TextButton(
                         style: ButtonStyle(
-                          padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+                          padding:
+                              const WidgetStatePropertyAll(EdgeInsets.zero),
                           visualDensity: VisualDensity.compact,
                           shape: WidgetStatePropertyAll(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(22),
                               side: BorderSide(
-                                color: controller.isSkipIntroFocused.value ? appColorPrimary : Colors.white54,
+                                color: controller.isSkipIntroFocused.value
+                                    ? appColorPrimary
+                                    : Colors.white54,
                               ),
                             ),
                           ),
@@ -1035,19 +1155,24 @@ class VideoPlayersComponent extends StatelessWidget {
                           controller.onSkipIntro();
                         },
                         child: Text(
-                          videoModel.type.toLowerCase() == VideoType.episode.toLowerCase()
+                          videoModel.type.toLowerCase() ==
+                                  VideoType.episode.toLowerCase()
                               ? locale.value.lblSkipRecap
                               : locale.value.lblSkipIntro,
                           style: primaryTextStyle(
-                            color: controller.isSkipIntroFocused.value ? appColorPrimary : white,
+                            color: controller.isSkipIntroFocused.value
+                                ? appColorPrimary
+                                : white,
                           ),
                         ).paddingSymmetric(horizontal: 16),
                       ),
                     ),
                   ],
                 ).visible(
-                  (videoModel.type.toLowerCase() == VideoType.movie.toLowerCase() ||
-                          videoModel.type.toLowerCase() == VideoType.episode.toLowerCase()) &&
+                  (videoModel.type.toLowerCase() ==
+                              VideoType.movie.toLowerCase() ||
+                          videoModel.type.toLowerCase() ==
+                              VideoType.episode.toLowerCase()) &&
                       controller.showSkipIntroOverlay.value &&
                       !controller.isLoading.value,
                 ),
@@ -1104,20 +1229,24 @@ class VideoPlayersComponent extends StatelessWidget {
                       autofocus: true,
                       canRequestFocus: true,
                       focusNode: controller.skipNextVideoFocusNode,
-                      onFocusChange: (value) => controller.isSkipNextFocused(value),
+                      onFocusChange: (value) =>
+                          controller.isSkipNextFocused(value),
                       onKeyEvent: (node, event) {
                         controller.handleVideoControls(event);
                         return KeyEventResult.handled;
                       },
                       child: TextButton(
                         style: ButtonStyle(
-                          padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+                          padding:
+                              const WidgetStatePropertyAll(EdgeInsets.zero),
                           visualDensity: VisualDensity.compact,
                           shape: WidgetStatePropertyAll(
                             RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(22),
                               side: BorderSide(
-                                color: controller.isSkipNextFocused.value ? appColorPrimary : Colors.white54,
+                                color: controller.isSkipNextFocused.value
+                                    ? appColorPrimary
+                                    : Colors.white54,
                               ),
                             ),
                           ),
@@ -1128,7 +1257,9 @@ class VideoPlayersComponent extends StatelessWidget {
                         child: Text(
                           locale.value.lblSkip,
                           style: primaryTextStyle(
-                            color: controller.isSkipNextFocused.value ? appColorPrimary : white,
+                            color: controller.isSkipNextFocused.value
+                                ? appColorPrimary
+                                : white,
                           ),
                         ).paddingSymmetric(horizontal: 16),
                       ),

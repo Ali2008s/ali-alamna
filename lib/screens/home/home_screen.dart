@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:streamit_laravel/screens/home/components/slider_widget.dart';
+import 'package:streamit_laravel/screens/home/components/mini_matches_widget.dart';
 import 'package:streamit_laravel/screens/home/shimmer_home.dart';
 
 import '../../components/app_scaffold.dart';
@@ -52,16 +53,27 @@ class HomeScreen extends StatelessWidget {
           onSuccess: (res) {
             return SingleChildScrollView(
               controller: homeScreenController.homeScrollController,
-              padding: EdgeInsets.only(bottom: 32),
-              physics: AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: 32),
+              physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Slider
                   Obx(() {
-                    return SliderComponent(homeScreenCont: homeScreenController).visible(homeScreenController.sliderController.listContent.isNotEmpty);
+                    return SliderComponent(homeScreenCont: homeScreenController)
+                        .visible(homeScreenController.sliderController.listContent.isNotEmpty);
                   }),
-                  CategoryListComponent(categoryList: homeScreenController.dashboardSectionList, isPlayTrailer: true),
+
+                  // ─── Mini Matches Widget (between sections) ───────────
+                  const MiniMatchesWidget(),
+                  const SizedBox(height: 8),
+
+                  // Channel Category Sections
+                  CategoryListComponent(
+                    categoryList: homeScreenController.dashboardSectionList,
+                    isPlayTrailer: true,
+                  ),
                   Obx(
                     () => homeScreenController.showCategoryShimmer.value
                         ? Column(
@@ -98,8 +110,8 @@ class HomeScreen extends StatelessWidget {
                               ).paddingSymmetric(vertical: 8, horizontal: 16),
                             ),
                           )
-                        : Offstage(),
-                  )
+                        : const Offstage(),
+                  ),
                 ],
               ),
             );

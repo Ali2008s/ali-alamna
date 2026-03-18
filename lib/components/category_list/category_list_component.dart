@@ -40,6 +40,7 @@ class CategoryListComponent extends StatelessWidget {
           itemBuilder: (context, index) {
             CategoryListModel category = categoryList[index];
             final bool isFirstCategory = index == firstVisibleIndex;
+            bool isChannelSection = category.sectionType == DashboardCategoryType.channels || category.sectionType.startsWith('channels_') || category.type == 'livetv';
             
             switch (category.sectionType) {
               case DashboardCategoryType.continueWatching:
@@ -120,6 +121,7 @@ class CategoryListComponent extends StatelessWidget {
                 isSearch: isSearch,
                 isLoading: isLoading,
                 type: category.sectionType,
+                isTopChannel: isChannelSection,
                 isPlayTrailer: isPlayTrailer,
                 isFirstCategory: isFirstCategory,
               ).visible(category.data.isNotEmpty);

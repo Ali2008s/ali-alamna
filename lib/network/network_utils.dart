@@ -39,7 +39,7 @@ Map<String, String> buildHeaderTokens({
     'Accept': "application/json",
     'global-localization': selectedLanguageCode.value,
     'User-Agent': getUserAgent(),
-    'device-type': "AndroidTV",
+    'device-type': kIsWeb ? "Web" : "AndroidTV",
   };
 
   if (endPoint == APIEndPoints.register) {

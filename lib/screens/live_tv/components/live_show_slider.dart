@@ -54,14 +54,8 @@ class LiveShowSliderComponent extends StatelessWidget {
                 return KeyEventResult.handled;
               }
               if (event.logicalKey == LogicalKeyboardKey.select || event.logicalKey == LogicalKeyboardKey.enter) {
-                doIfLogin(onLoggedIn: () {
-                  if (liveTvCont.currentSliderPage.value.access == MovieAccess.paidAccess && liveTvCont.currentSliderPage.value.requiredPlanLevel != 0 && currentSubscription.value.level < liveTvCont.currentSliderPage.value.requiredPlanLevel) {
-                    showSubscriptionDialog(title: locale.value.subscriptionRequired,msg: locale.value.pleaseSubscribeOrUpgrade);
-                  } else {
-                    LiveStream().emit(podPlayerPauseKey);
-                    Get.to(() => LiveShowDetailsScreen(), arguments: liveTvCont.currentSliderPage.value);
-                  }
-                });
+                LiveStream().emit(podPlayerPauseKey);
+                Get.to(() => LiveShowDetailsScreen(), arguments: liveTvCont.currentSliderPage.value);
                 return KeyEventResult.handled;
               }
               if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
@@ -145,56 +139,62 @@ class LiveTvSliderPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        CachedImageWidget(url: data.posterTvImage.validate(), width: double.infinity, height: double.infinity, fit: BoxFit.cover),
-        Container(
-          height: Get.height * 0.55,
-          width: double.infinity,
-          foregroundDecoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [black.withValues(alpha: 0.4), black.withValues(alpha: 0.2), black.withValues(alpha: 0.8), black.withValues(alpha: 1)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+    return InkWell(
+      onTap: () {
+        LiveStream().emit(podPlayerPauseKey);
+        Get.to(() => LiveShowDetailsScreen(), arguments: data);
+      },
+      child: Stack(
+        children: [
+          CachedImageWidget(url: data.posterTvImage.validate(), width: double.infinity, height: double.infinity, fit: BoxFit.cover),
+          Container(
+            height: Get.height * 0.55,
+            width: double.infinity,
+            foregroundDecoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [black.withValues(alpha: 0.4), black.withValues(alpha: 0.2), black.withValues(alpha: 0.8), black.withValues(alpha: 1)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
           ),
-        ),
-        Positioned(
-          bottom: 16,
-          right: 0,
-          left: 0,
-          child: Obx(
-            () => Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  height: 40,
-                  padding: EdgeInsets.symmetric(horizontal: 22),
-                  decoration: BoxDecoration(
-                    borderRadius: radius(4),
-                    color: appColorPrimary,
-                    border: focusBorder(liveTvCont.sliderHasFocus.value),
+          Positioned(
+            bottom: 16,
+            right: 0,
+            left: 0,
+            child: Obx(
+              () => Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    height: 40,
+                    padding: EdgeInsets.symmetric(horizontal: 22),
+                    decoration: BoxDecoration(
+                      borderRadius: radius(4),
+                      color: appColorPrimary,
+                      border: focusBorder(liveTvCont.sliderHasFocus.value),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const CachedImageWidget(
+                          url: Assets.iconsIcPlay,
+                          height: 10,
+                          width: 10,
+                        ),
+                        12.width,
+                        Text(locale.value.playNow, style: appButtonTextStyleWhite),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const CachedImageWidget(
-                        url: Assets.iconsIcPlay,
-                        height: 10,
-                        width: 10,
-                      ),
-                      12.width,
-                      Text(locale.value.playNow, style: appButtonTextStyleWhite),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

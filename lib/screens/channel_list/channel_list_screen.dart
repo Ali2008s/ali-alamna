@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nb_utils/nb_utils.dart';
-import 'package:streamit_laravel/utils/app_common.dart';
 import 'package:streamit_laravel/utils/colors.dart';
 
 import '../../components/app_scaffold.dart';
@@ -81,22 +80,20 @@ class ChannelListScreen extends StatelessWidget {
                         isSearch: false,
                         isTopChannel: true,
                         onTap: (posterDet) {
-                          doIfLogin(onLoggedIn: () {
-                            Get.to(
-                              () => LiveShowDetailsScreen(),
-                              arguments: ChannelModel(
-                                id: posterDet.id,
-                                name: posterDet.name,
-                                requiredPlanLevel: posterDet.requiredPlanLevel,
-                                streamType: posterDet.streamType,
-                                serverUrl: posterDet.serverUrl,
-                                description: posterDet.description,
-                                category: posterDet.category,
-                                access: posterDet.access,
-                                posterTvImage: posterDet.posterTvImage,
-                              ),
-                            );
-                          });
+                          Get.to(
+                            () => LiveShowDetailsScreen(),
+                            arguments: ChannelModel(
+                              id: posterDet.id,
+                              name: posterDet.name,
+                              requiredPlanLevel: posterDet.requiredPlanLevel,
+                              streamType: posterDet.streamType,
+                              serverUrl: posterDet.serverUrl,
+                              description: posterDet.description,
+                              category: posterDet.category,
+                              access: posterDet.access,
+                              posterTvImage: posterDet.posterTvImage,
+                            ),
+                          );
                         },
                         onNextPage: () async {
                           if (!movieListCont.isLastPage.value) {

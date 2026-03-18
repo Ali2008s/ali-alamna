@@ -7,7 +7,6 @@ import 'package:streamit_laravel/utils/constants.dart';
 import 'package:streamit_laravel/utils/colors.dart';
 import 'package:streamit_laravel/screens/dashboard/dashboard_controller.dart';
 
-import '../../../main.dart';
 import '../../../utils/app_common.dart';
 import '../../channel_list/channel_list_screen.dart';
 import '../live_tv_details/live_tv_details_screen.dart';
@@ -87,56 +86,57 @@ class FocusableChannelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Focus(
-      canRequestFocus: true,
-      autofocus: true,
-      focusNode: liveShowDet.itemFocusNode,
-      onFocusChange: (value) {
-        onFocusChange?.call(value);
-        hasFocus(value);
-      },
-      onKeyEvent: (node, event) {
-        try {
-          if (event is KeyDownEvent) {
-            if (event.logicalKey == LogicalKeyboardKey.select) {
-              doIfLogin(onLoggedIn: () {
-                if (liveShowDet.access == MovieAccess.paidAccess && liveShowDet.requiredPlanLevel != 0 && currentSubscription.value.level < liveShowDet.requiredPlanLevel) {
-                  showSubscriptionDialog(title: locale.value.subscriptionRequired,msg: locale.value.pleaseSubscribeOrUpgrade);
-                } else {
-                  LiveStream().emit(podPlayerPauseKey);
-                  Get.to(() => LiveShowDetailsScreen(), arguments: liveShowDet);
-                }
-              });
-              return KeyEventResult.handled;
+    return Obx(
+      () => Focus(
+        canRequestFocus: true,
+        focusNode: liveShowDet.itemFocusNode,
+        onFocusChange: (value) {
+          onFocusChange?.call(value);
+          hasFocus(value);
+        },
+        onKeyEvent: (node, event) {
+          try {
+            if (event is KeyDownEvent) {
+              if (event.logicalKey == LogicalKeyboardKey.select || event.logicalKey == LogicalKeyboardKey.enter) {
+                LiveStream().emit(podPlayerPauseKey);
+                Get.to(() => LiveShowDetailsScreen(), arguments: liveShowDet);
+                return KeyEventResult.handled;
+              }
+              if (event.logicalKey == LogicalKeyboardKey.arrowLeft && isFirst) {
+                final controller = Get.find<DashboardController>();
+                controller.bottomNavItems[controller.selectedBottomNavIndex.value].focusNode.requestFocus();
+                return KeyEventResult.handled;
+              }
             }
-            if(event.logicalKey == LogicalKeyboardKey.arrowLeft && isFirst) {
-              final controller = Get.find<DashboardController>();
-              controller.bottomNavItems[controller.selectedBottomNavIndex.value].focusNode.requestFocus();
-              return KeyEventResult.handled;
-            }
-
+          } catch (e) {
+            log('error in ChannelCard KeyboardListener: $e');
           }
-        } catch (e) {
-          log('error in CountryCode KeyboardListener: $e');
-        }
-        return KeyEventResult.ignored;
-      },
-      child: Obx(
-        () => AnimatedContainer(
-          margin: EdgeInsets.only(right: 16, top: 16),
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOut,
-          transform: Matrix4.identity()
-            ..translate(0.0, hasFocus.value ? -8.0 : 0.0, 0.0)
-            ..scale(hasFocus.value ? 1.05 : 1.0),
-          child: Container(
-            decoration: boxDecorationDefault(
-              borderRadius: radius(4),
-              color: cardColor,
-              border: focusBorder(hasFocus.value),
-              boxShadow: hasFocus.value ? [BoxShadow(color: white.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4), spreadRadius: 2)] : null,
+          return KeyEventResult.ignored;
+        },
+        child: InkWell(
+          onTap: () {
+            LiveStream().emit(podPlayerPauseKey);
+            Get.to(() => LiveShowDetailsScreen(), arguments: liveShowDet);
+          },
+          onFocusChange: (value) {
+            // value is already handled by Focus widget
+          },
+          child: AnimatedContainer(
+            margin: EdgeInsets.only(right: 16, top: 16),
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            transform: Matrix4.identity()
+              ..translate(0.0, hasFocus.value ? -8.0 : 0.0, 0.0)
+              ..scale(hasFocus.value ? 1.05 : 1.0),
+            child: Container(
+              decoration: boxDecorationDefault(
+                borderRadius: radius(4),
+                color: cardColor,
+                border: focusBorder(hasFocus.value),
+                boxShadow: hasFocus.value ? [BoxShadow(color: white.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4), spreadRadius: 2)] : null,
+              ),
+              child: LiveShowCardComponent(width: Get.width / 4, liveShowDet: liveShowDet),
             ),
-            child: LiveShowCardComponent(width: Get.width / 4, liveShowDet: liveShowDet),
           ),
         ),
       ),

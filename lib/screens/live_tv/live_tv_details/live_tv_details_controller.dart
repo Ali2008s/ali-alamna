@@ -21,19 +21,27 @@ class LiveShowDetailsController extends GetxController {
     if (Get.arguments is ChannelModel) {
       liveShowDetails(LiveShowModel.fromJson((Get.arguments as ChannelModel).toJson()));
     }
-    getLiveShowDetail(showLoader: false);
+    getLiveShowDetail();
     super.onInit();
   }
 
   ///Get Live SHow List
-  Future<void> getLiveShowDetail({bool showLoader = true}) async {
-    if (showLoader) {
-      isLoading(true);
+  Future<void> getLiveShowDetail() async {
+    String? channelId = Get.arguments is ChannelModel ? (Get.arguments as ChannelModel).id.toString() : Get.arguments as String?;
+
+    if (channelId == "0" || channelId == "-1") {
+      log('Custom channel detected, skipping API call');
+      isLoading(false);
+      return;
     }
+
+    isLoading(true); // Keep loading indicator for valid channels
     await getLiveShowDetailsFuture(CoreServiceApis.getLiveShowDetails(channelId: (Get.arguments as ChannelModel).id, userId: loginUserData.value.id)).then((value) {
       isSupportedDevice(value.data.isDeviceSupported);
       setValue(SharedPreferenceConst.IS_SUPPORTED_DEVICE, value.data.isDeviceSupported);
       liveShowDetails(value.data);
+    }).onError((error, stackTrace) {
+      log('getLiveShowDetails Err: $error');
     }).whenComplete(() => isLoading(false));
   }
 

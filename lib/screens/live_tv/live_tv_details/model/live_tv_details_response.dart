@@ -71,7 +71,7 @@ class LiveShowModel {
       id: json['id'] is int ? json['id'] : -1,
       name: json['name'] is String ? json['name'] : "",
       description: json['description'] is String ? json['description'] : "",
-      posterTvImage: json['poster_tv_image'] is String ? json['poster_tv_image'] : "",
+      posterTvImage: json['poster_tv_image'] is String ? json['poster_tv_image'] : json['poster_image'] is String ? json['poster_image'] : "",
       category: json['category'] is String ? json['category'] : "",
       streamType: json['stream_type'] is String ? json['stream_type'] : "",
       embedded: json['embedded'],
@@ -82,7 +82,7 @@ class LiveShowModel {
       requiredPlanLevel: json['plan_level'] is int ? json['plan_level'] : 0,
       planId: json['plan_id'] is int ? json['plan_id'] : -1,
       access: json['access'] is String ? json['access'] : "",
-      embedUrl: json['embedded'] is String ? json['embedded'] : '',
+      embedUrl: json['embedded'] is String ? json['embedded'] : (json['embedded'] != null ? json['embedded'].toString() : ''),
     );
   }
 

@@ -47,8 +47,10 @@ class VideoPlayersController extends GetxController {
 
   final LiveShowModel liveShowModel;
 
-  Rx<PodPlayerController> podPlayerController = PodPlayerController(playVideoFrom: PlayVideoFrom.youtube("")).obs;
-  Rx<YoutubePlayerController> youtubePlayerController = YoutubePlayerController(initialVideoId: '').obs;
+  Rx<PodPlayerController> podPlayerController =
+      PodPlayerController(playVideoFrom: PlayVideoFrom.youtube("")).obs;
+  Rx<YoutubePlayerController> youtubePlayerController =
+      YoutubePlayerController(initialVideoId: '').obs;
   Rx<WebViewController> webViewController = WebViewController().obs;
 
   RxBool isAutoPlay = true.obs;
@@ -88,7 +90,8 @@ class VideoPlayersController extends GetxController {
   Rx<SubtitleModel> selectedSubtitleModel = SubtitleModel().obs;
 
   // Use shared subtitle preload service for cache management
-  final SubtitlePreloadService _subtitlePreloadService = SubtitlePreloadService();
+  final SubtitlePreloadService _subtitlePreloadService =
+      SubtitlePreloadService();
 
   // Focus nodes
   FocusNode qualityTabFocusNode = FocusNode();
@@ -235,7 +238,8 @@ class VideoPlayersController extends GetxController {
 
     // Add midroll ad breaks
     if (midRollAdSeconds.isNotEmpty) {
-      allBreaks.addAll(midRollAdSeconds.map((seconds) => Duration(seconds: seconds)));
+      allBreaks.addAll(
+          midRollAdSeconds.map((seconds) => Duration(seconds: seconds)));
     }
 
     // Add overlay ad breaks
@@ -244,11 +248,13 @@ class VideoPlayersController extends GetxController {
     }
 
     if (postRollAds.isNotEmpty && !isPostRollAdShown.value) {
-      final videoDuration = podPlayerController.value.videoPlayerValue?.duration ?? Duration.zero;
+      final videoDuration =
+          podPlayerController.value.videoPlayerValue?.duration ?? Duration.zero;
       if (videoDuration.inSeconds > 0) {
         final isEpisode = _isEpisodeContent();
         final postRollPercentage = isEpisode ? 0.7 : 0.9;
-        final postRollPosition = (videoDuration.inSeconds * postRollPercentage).round();
+        final postRollPosition =
+            (videoDuration.inSeconds * postRollPercentage).round();
         log('+-+-+-+-+-+-+-+-+-Post-roll ad timing: ${isEpisode ? "EPISODE" : "OTHER"} content - ${(postRollPercentage * 100).toInt()}% (${formatSecondsToHMS(postRollPosition)})');
         allBreaks.add(Duration(seconds: postRollPosition));
       }
@@ -258,7 +264,9 @@ class VideoPlayersController extends GetxController {
     final uniqueBreaks = allBreaks.toSet().toList();
     uniqueBreaks.sort((a, b) => a.inSeconds.compareTo(b.inSeconds));
 
-    return (videoModel.value.isPurchased || isTrailer.value == true) ? [] : uniqueBreaks;
+    return (videoModel.value.isPurchased || isTrailer.value == true)
+        ? []
+        : uniqueBreaks;
   }
 
   /// Check if a specific position is an ad break point
@@ -276,7 +284,9 @@ class VideoPlayersController extends GetxController {
   /// Returns the next ad break point or null if no more breaks
   Duration? getNextAdBreak(int position) {
     final adBreaks = getAllAdBreaks();
-    final nextBreaks = adBreaks.where((breakPoint) => breakPoint.inSeconds > position).toList();
+    final nextBreaks = adBreaks
+        .where((breakPoint) => breakPoint.inSeconds > position)
+        .toList();
     return nextBreaks.isNotEmpty ? nextBreaks.first : null;
   }
 
@@ -365,7 +375,9 @@ class VideoPlayersController extends GetxController {
 
     final contentIdForAds = (videoModel.value.type.toLowerCase() == 'episode')
         ? videoModel.value.id // Use episode ID for episodes
-        : (videoModel.value.entertainmentId > 0 ? videoModel.value.entertainmentId : videoModel.value.id);
+        : (videoModel.value.entertainmentId > 0
+            ? videoModel.value.entertainmentId
+            : videoModel.value.id);
 
     final applicableDashboardAds = _getApplicableVastAdsForContent(
       contentType: videoModel.value.type,
@@ -465,7 +477,9 @@ class VideoPlayersController extends GetxController {
         }
 
         // Show when inside intro range
-        if (!skipIntroHandled && currentPosition >= introStart && currentPosition <= introEnd) {
+        if (!skipIntroHandled &&
+            currentPosition >= introStart &&
+            currentPosition <= introEnd) {
           log('+-+-+-+-+-+-+-+-+-*** SHOWING SKIP INTRO BUTTON *** at position $currentPosition (intro range: $introStart-$introEnd)');
           log('+-+-+-+-+-+-+-+-+-Current state: isLoading=${isLoading.value}, isVideoPlaying=${isVideoPlaying.value}');
           skipIntroHandled = true;
@@ -498,13 +512,15 @@ class VideoPlayersController extends GetxController {
     isSkipIntroFocused.value = false;
     skipIntroFocusNode.unfocus();
 
-    Duration duration = Duration(seconds: parseDurationToSeconds(videoModel.value.introEndsAt));
+    Duration duration =
+        Duration(seconds: parseDurationToSeconds(videoModel.value.introEndsAt));
     if (youtubePlayerController.value.value.isReady) {
       youtubePlayerController.value.seekTo(duration);
     } else if (podPlayerController.value.isInitialised) {
       podPlayerController.value.videoSeekForward(duration);
     } else if (await webViewController.value.currentUrl() != null) {
-      webViewController.value.runJavaScript('seekTo(${(duration.inSeconds).toString()})');
+      webViewController.value
+          .runJavaScript('seekTo(${(duration.inSeconds).toString()})');
     }
 
     // Return focus to main video controls
@@ -533,7 +549,9 @@ class VideoPlayersController extends GetxController {
         final vastMedia = await fetchVastMedia(ad.url!);
         if (vastMedia != null && vastMedia.mediaUrls.isNotEmpty) {
           final skipSeconds = vastMedia.skipDuration ??
-              (parseDurationToSeconds(ad.skipAfter) == 0 ? 5 : parseDurationToSeconds(ad.skipAfter));
+              (parseDurationToSeconds(ad.skipAfter) == 0
+                  ? 5
+                  : parseDurationToSeconds(ad.skipAfter));
           final lastIndex = vastMedia.mediaUrls.length - 1;
           for (int i = 0; i < vastMedia.mediaUrls.length; i++) {
             log('+-+-+-+-+-+-+-+-+-Adding VAST ad config: URL=${vastMedia.mediaUrls[i]}, skippable=${i == lastIndex && skipSeconds > 0}');
@@ -542,7 +560,9 @@ class VideoPlayersController extends GetxController {
               isSkippable: i == lastIndex && skipSeconds > 0,
               skipAfterSeconds: skipSeconds,
               type: 'video',
-              clickThroughUrl: (i < vastMedia.clickThroughUrls.length) ? vastMedia.clickThroughUrls[i] : null,
+              clickThroughUrl: (i < vastMedia.clickThroughUrls.length)
+                  ? vastMedia.clickThroughUrls[i]
+                  : null,
             ));
           }
         }
@@ -601,7 +621,8 @@ class VideoPlayersController extends GetxController {
         } else if (videoModel.value.seasonId > 0) {
           actualContentType = 'tvshow';
         } else {
-          if (videoModel.value.watchedTime.isNotEmpty && videoModel.value.watchedTime != '00:00:00') {
+          if (videoModel.value.watchedTime.isNotEmpty &&
+              videoModel.value.watchedTime != '00:00:00') {
             actualContentType = 'video';
           } else {
             actualContentType = 'movie';
@@ -621,20 +642,25 @@ class VideoPlayersController extends GetxController {
       if (ad.targetSelection == null) {
         return false;
       }
-      final cleaned = ad.targetSelection!.replaceAll('[', '').replaceAll(']', '').replaceAll(' ', '');
+      final cleaned = ad.targetSelection!
+          .replaceAll('[', '')
+          .replaceAll(']', '')
+          .replaceAll(' ', '');
       final ids = cleaned.split(',').toSet();
       if (!ids.contains(contentId.toString())) {
         return false;
       }
       if (ad.startDate != null) {
         final adStartDate = ad.startDate!;
-        final adStartDay = DateTime(adStartDate.year, adStartDate.month, adStartDate.day);
+        final adStartDay =
+            DateTime(adStartDate.year, adStartDate.month, adStartDate.day);
         if (adStartDay.isAfter(today)) return false;
       }
 
       if (ad.endDate != null) {
         final adEndDate = ad.endDate!;
-        final adEndDay = DateTime(adEndDate.year, adEndDate.month, adEndDate.day);
+        final adEndDay =
+            DateTime(adEndDate.year, adEndDate.month, adEndDate.day);
         if (adEndDay.isBefore(today)) {
           return false;
         }
@@ -656,7 +682,9 @@ class VideoPlayersController extends GetxController {
     return AdConfig(
       url: ad.url ?? '',
       isSkippable: ad.enableSkip ?? false,
-      skipAfterSeconds: (parseDurationToSeconds(ad.skipAfter) == 0 ? 5 : parseDurationToSeconds(ad.skipAfter)),
+      skipAfterSeconds: (parseDurationToSeconds(ad.skipAfter) == 0
+          ? 5
+          : parseDurationToSeconds(ad.skipAfter)),
       type: 'video',
     );
   }
@@ -680,8 +708,11 @@ class VideoPlayersController extends GetxController {
 
     for (int i = 1; i <= adFrequency; i++) {
       final adTime = (totalDurationInSeconds * i / (adFrequency + 1)).round();
-      final minTime = totalDurationInSeconds > 120 ? 30 : 10; // 30s for long videos, 10s for short
-      final maxTime = totalDurationInSeconds - (totalDurationInSeconds > 120 ? 30 : 10);
+      final minTime = totalDurationInSeconds > 120
+          ? 30
+          : 10; // 30s for long videos, 10s for short
+      final maxTime =
+          totalDurationInSeconds - (totalDurationInSeconds > 120 ? 30 : 10);
       if (adTime >= minTime && adTime <= maxTime) {
         midRollAdSeconds.add(adTime);
       }
@@ -693,8 +724,10 @@ class VideoPlayersController extends GetxController {
   void startCheckingValue() async {
     checkTimer?.cancel();
 
-    checkTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) async {
-      if (adViewPlayerKey.currentState != null && adViewPlayerKey.currentState!.isEnded) {
+    checkTimer =
+        Timer.periodic(const Duration(milliseconds: 500), (timer) async {
+      if (adViewPlayerKey.currentState != null &&
+          adViewPlayerKey.currentState!.isEnded) {
         await skipAd();
         // Stop the timer when ad is completed
         timer.cancel();
@@ -724,7 +757,8 @@ class VideoPlayersController extends GetxController {
         podPlayerController.value.pause();
       }
       if (youtubePlayerController.value.value.isReady) {
-        lastYoutubePositionBeforeAd(youtubePlayerController.value.value.position);
+        lastYoutubePositionBeforeAd(
+            youtubePlayerController.value.value.position);
         youtubePlayerController.value.pause();
       }
       if (isWebViewActive()) {
@@ -762,7 +796,8 @@ class VideoPlayersController extends GetxController {
       await Future.delayed(Duration(milliseconds: 200));
 
       adPlayerListener = () async {
-        if (adViewPlayerKey.currentState != null && adViewPlayerKey.currentState!.isEnded) {
+        if (adViewPlayerKey.currentState != null &&
+            adViewPlayerKey.currentState!.isEnded) {
           await skipAd();
           if (!completer.isCompleted) completer.complete();
         }
@@ -787,7 +822,8 @@ class VideoPlayersController extends GetxController {
 
         adSkipTimerController = Timer.periodic(Duration(seconds: 1), (timer) {
           if (adSkipTimer.value > 0) {
-            if (adViewPlayerKey.currentState != null && adViewPlayerKey.currentState!.isPlaying) {
+            if (adViewPlayerKey.currentState != null &&
+                adViewPlayerKey.currentState!.isPlaying) {
               adSkipTimer.value--;
             }
           } else {
@@ -823,7 +859,8 @@ class VideoPlayersController extends GetxController {
 
       isResumingFromAd(true);
 
-      final isLocalVideo = videoUrlType.value.toLowerCase() == PlayerTypes.local.toLowerCase();
+      final isLocalVideo =
+          videoUrlType.value.toLowerCase() == PlayerTypes.local.toLowerCase();
 
       if (podPlayerController.value.isInitialised) {
         // SPECIAL HANDLING FOR LOCAL VIDEOS
@@ -841,7 +878,8 @@ class VideoPlayersController extends GetxController {
             }
 
             // For MID-ROLL ads, just resume playback without reinitializing
-            final currentPosition = podPlayerController.value.currentVideoPosition;
+            final currentPosition =
+                podPlayerController.value.currentVideoPosition;
 
             if (currentPosition.inSeconds > 10) {
               // This is likely a mid-roll ad - player is already initialized
@@ -912,7 +950,8 @@ class VideoPlayersController extends GetxController {
               isResumingFromAd(false);
               return;
             } else {
-              final currentPosition = podPlayerController.value.currentVideoPosition;
+              final currentPosition =
+                  podPlayerController.value.currentVideoPosition;
               podPlayerController.value.dispose();
               await Future.delayed(const Duration(milliseconds: 500));
 
@@ -956,7 +995,8 @@ class VideoPlayersController extends GetxController {
       } else if (youtubePlayerController.value.value.isReady) {
         log('+-+-+-+-+-+-+-+-+-Resuming YouTube content');
         if (lastYoutubePositionBeforeAd.value != null) {
-          youtubePlayerController.value.seekTo(lastYoutubePositionBeforeAd.value ?? Duration.zero);
+          youtubePlayerController.value
+              .seekTo(lastYoutubePositionBeforeAd.value ?? Duration.zero);
         }
         youtubePlayerController.value.play();
         lastYoutubePositionBeforeAd.value = null;
@@ -976,10 +1016,12 @@ class VideoPlayersController extends GetxController {
         }
       } else {
         log('+-+-+-+-+-+-+-+-+-Player not initialized after ad');
-        if (videoUrlType.value.toLowerCase() == PlayerTypes.local.toLowerCase() ||
+        if (videoUrlType.value.toLowerCase() ==
+                PlayerTypes.local.toLowerCase() ||
             videoUrlType.value.toLowerCase() == PlayerTypes.url.toLowerCase() ||
             videoUrlType.value.toLowerCase() == PlayerTypes.hls.toLowerCase() ||
-            videoUrlType.value.toLowerCase() == PlayerTypes.x265.toLowerCase()) {
+            videoUrlType.value.toLowerCase() ==
+                PlayerTypes.x265.toLowerCase()) {
           await initializePodPlayer(videoUrl.value);
         } else {
           shouldResumeAfterAd(true);
@@ -1006,7 +1048,9 @@ class VideoPlayersController extends GetxController {
           url: vastMedia.mediaUrls[i],
           isSkippable: isLastVideo,
           skipAfterSeconds: isLastVideo ? 5 : 0,
-          clickThroughUrl: (i < vastMedia.clickThroughUrls.length) ? vastMedia.clickThroughUrls[i] : null,
+          clickThroughUrl: (i < vastMedia.clickThroughUrls.length)
+              ? vastMedia.clickThroughUrls[i]
+              : null,
         ));
       }
     } else {
@@ -1020,8 +1064,9 @@ class VideoPlayersController extends GetxController {
 
       if (response.statusCode != 200) return null;
 
-      String xmlString =
-          response.body.replaceAll('<IconClicks>', '<Iconclicks>').replaceAll('</IconClicks>', '</Iconclicks>');
+      String xmlString = response.body
+          .replaceAll('<IconClicks>', '<Iconclicks>')
+          .replaceAll('</IconClicks>', '</Iconclicks>');
 
       final document = xml.XmlDocument.parse(xmlString);
 
@@ -1031,16 +1076,24 @@ class VideoPlayersController extends GetxController {
           .map((e) => e.innerText.trim())
           .toList();
 
-      final clickThroughUrls = document.findAllElements('ClickThrough').map((e) => e.innerText.trim()).toList();
+      final clickThroughUrls = document
+          .findAllElements('ClickThrough')
+          .map((e) => e.innerText.trim())
+          .toList();
 
-      final clickTrackingUrls = document.findAllElements('ClickTracking').map((e) => e.innerText.trim()).toList();
+      final clickTrackingUrls = document
+          .findAllElements('ClickTracking')
+          .map((e) => e.innerText.trim())
+          .toList();
 
       // Parse skip duration from <Linear skipoffset="..."> if available
       int? vastSkipDuration;
-      final Iterable<XmlElement> linearElements = document.findAllElements('Linear').where(
-            (e) => e.getAttribute('skipoffset') != null,
-          );
-      final XmlElement? linear = linearElements.isNotEmpty ? linearElements.first : null;
+      final Iterable<XmlElement> linearElements =
+          document.findAllElements('Linear').where(
+                (e) => e.getAttribute('skipoffset') != null,
+              );
+      final XmlElement? linear =
+          linearElements.isNotEmpty ? linearElements.first : null;
       final skipOffset = linear?.getAttribute('skipoffset');
       if (skipOffset != null) {
         final parts = skipOffset.split(':');
@@ -1070,7 +1123,8 @@ class VideoPlayersController extends GetxController {
               .map((e) => e.innerText.trim())
               .firstWhere((e) => e.isNotEmpty, orElse: () => '');
 
-          final minSuggestedDuration = nonLinear.getAttribute('minSuggestedDuration') ?? '00:00:05';
+          final minSuggestedDuration =
+              nonLinear.getAttribute('minSuggestedDuration') ?? '00:00:05';
 
           int duration = 10;
           final parts = minSuggestedDuration.split(':');
@@ -1127,14 +1181,17 @@ class VideoPlayersController extends GetxController {
 
   /// Monitor x265 video performance
   void _monitorX265Performance(Duration position, Duration duration) {
-    final isX265Video = videoUrlType.value.toLowerCase() == PlayerTypes.x265.toLowerCase();
+    final isX265Video =
+        videoUrlType.value.toLowerCase() == PlayerTypes.x265.toLowerCase();
     if (!isX265Video) return;
 
     final currentSecond = position.inSeconds;
     final totalSeconds = duration.inSeconds;
 
     if (currentSecond > 0 && currentSecond % 30 == 0) {
-      final progress = totalSeconds > 0 ? (currentSecond / totalSeconds * 100).toStringAsFixed(1) : '0.0';
+      final progress = totalSeconds > 0
+          ? (currentSecond / totalSeconds * 100).toStringAsFixed(1)
+          : '0.0';
       log('+-+-+-+-+-+-+-+-+-x265 Performance: ${formatSecondsToHMS(currentSecond)}/${formatSecondsToHMS(totalSeconds)} ($progress%) - Playing: ${isVideoPlaying.value}, Buffering: ${isBuffering.value}');
 
       // Check for performance issues
@@ -1143,7 +1200,10 @@ class VideoPlayersController extends GetxController {
       }
     }
 
-    if (currentSecond == 0 && duration > Duration.zero && !isBuffering.value && !hasAttemptedForcePlay) {
+    if (currentSecond == 0 &&
+        duration > Duration.zero &&
+        !isBuffering.value &&
+        !hasAttemptedForcePlay) {
       log('+-+-+-+-+-+-+-+-+-x265 Warning: Video appears stuck at 0 seconds, duration available: $duration');
       if (podPlayerController.value.isInitialised) {
         log('+-+-+-+-+-+-+-+-+-x265 Attempting to force play stuck video');
@@ -1183,27 +1243,38 @@ class VideoPlayersController extends GetxController {
 
   void setInitialFocusesForSubtitleAndQuality() {
     // Only add default_quality if it doesn't already exist in the list
-    final hasDefaultQuality = videoQualities.any(
-        (link) => link.quality.isEmpty || link.quality.toLowerCase() == QualityConstants.defaultQuality.toLowerCase());
+    final hasDefaultQuality = videoQualities.any((link) =>
+        link.quality.isEmpty ||
+        link.quality.toLowerCase() ==
+            QualityConstants.defaultQuality.toLowerCase());
 
     if (!hasDefaultQuality) {
       videoQualities.add(VideoData(
-          id: -1, quality: QualityConstants.defaultQuality, url: videoUrl.value, urlType: videoUrlType.value));
+          id: -1,
+          quality: QualityConstants.defaultQuality,
+          url: videoUrl.value,
+          urlType: videoUrlType.value));
     }
 
     /// Initialize subtitles from the initial model
     subtitleList.clear();
     if (videoModel.value.subtitleList.isNotEmpty) {
       subtitleList.addAll(videoModel.value.subtitleList);
-      subtitleList.insert(0, SubtitleModel(id: -1, language: locale.value.off.capitalizeEachWord()));
+      subtitleList.insert(
+          0,
+          SubtitleModel(
+              id: -1, language: locale.value.off.capitalizeEachWord()));
 
       // Load default subtitle if available
-      if (subtitleList.any((element) => element.isDefaultLanguage.getBoolInt())) {
-        selectedSubtitleModel(subtitleList.firstWhere((element) => element.isDefaultLanguage.getBoolInt()));
+      if (subtitleList
+          .any((element) => element.isDefaultLanguage.getBoolInt())) {
+        selectedSubtitleModel(subtitleList
+            .firstWhere((element) => element.isDefaultLanguage.getBoolInt()));
         loadSubtitles(selectedSubtitleModel.value);
       }
     } else {
-      subtitleList.add(SubtitleModel(id: -1, language: locale.value.off.capitalizeEachWord()));
+      subtitleList.add(SubtitleModel(
+          id: -1, language: locale.value.off.capitalizeEachWord()));
     }
   }
 
@@ -1216,7 +1287,8 @@ class VideoPlayersController extends GetxController {
 
       // First priority: Check trailerData list (most reliable)
       if (videoModel.value.trailerData.isNotEmpty) {
-        final trailer = videoModel.value.trailerData.firstWhereOrNull((v) => v.url.isNotEmpty) ??
+        final trailer = videoModel.value.trailerData
+                .firstWhereOrNull((v) => v.url.isNotEmpty) ??
             videoModel.value.trailerData.first;
         if (trailer.url.isNotEmpty) {
           log('+-+-+-+-+-+-+-+-+-Found trailer URL in trailerData: type=${trailer.urlType}, url=${trailer.url.substring(0, trailer.url.length > 100 ? 100 : trailer.url.length)}...');
@@ -1235,7 +1307,8 @@ class VideoPlayersController extends GetxController {
       // Fallback: Use first playable quality (should not happen for trailers)
       if (videoModel.value.videoQualities.isNotEmpty) {
         log('+-+-+-+-+-+-+-+-+-WARNING: No trailer URL found, using first video quality as fallback');
-        final first = videoModel.value.videoQualities.firstWhereOrNull((v) => v.url.isNotEmpty) ??
+        final first = videoModel.value.videoQualities
+                .firstWhereOrNull((v) => v.url.isNotEmpty) ??
             videoModel.value.videoQualities.first;
         return (first.urlType, first.url);
       }
@@ -1243,35 +1316,41 @@ class VideoPlayersController extends GetxController {
       log('+-+-+-+-+-+-+-+-+-ERROR: No trailer URL found anywhere!');
       return (videoUrlType.value, videoUrl.value);
     } else if (liveShowModel.id > 0) {
-      if (liveShowModel.streamType.toLowerCase() == PlayerTypes.embedded.toLowerCase()) {
+      if (liveShowModel.streamType.toLowerCase() ==
+          PlayerTypes.embedded.toLowerCase()) {
         return (liveShowModel.streamType, liveShowModel.embedded);
       }
       return (liveShowModel.streamType, liveShowModel.serverUrl);
-    } else if (videoModel.value.videoUploadType.toLowerCase() == PlayerTypes.embedded.toLowerCase()) {
+    } else if (videoModel.value.videoUploadType.toLowerCase() ==
+        PlayerTypes.embedded.toLowerCase()) {
       return (videoModel.value.videoUploadType, videoModel.value.videoUrlInput);
     } else {
       // If no specific quality is selected, prefer default_quality
       if (videoModel.value.isDefaultQualityAvailable) {
         final defaultQuality = videoModel.value.defaultQuality;
-        if (defaultQuality.url.isNotEmpty && defaultQuality.urlType.isNotEmpty) {
+        if (defaultQuality.url.isNotEmpty &&
+            defaultQuality.urlType.isNotEmpty) {
           log('+-+-+-+-+-+-+-+-+-Using default_quality: type=${defaultQuality.urlType}, url=${defaultQuality.url.substring(0, defaultQuality.url.length > 100 ? 100 : defaultQuality.url.length)}...');
           return (defaultQuality.urlType, defaultQuality.url);
         }
       }
 
-      return (videoModel.value.videoUploadType.trim().isEmpty && videoModel.value.videoUrlInput.trim().isEmpty
+      return (videoModel.value.videoUploadType.trim().isEmpty &&
+              videoModel.value.videoUrlInput.trim().isEmpty
           ? (videoUrlType.value, videoUrl.value)
           : (videoModel.value.videoUploadType, videoModel.value.videoUrlInput));
     }
   }
 
   Future<void> initializePlayer() async {
-    bool isResumingFromContinueWatch = isAlreadyStartedWatching(videoModel.value.watchedTime);
+    bool isResumingFromContinueWatch =
+        isAlreadyStartedWatching(videoModel.value.watchedTime);
 
     // Don't disable trailer mode if we're explicitly in trailer mode
     // Only disable if we're resuming from continue watch (user wants to continue, not watch trailer)
     if (!isTrailer.value &&
-        ((videoModel.value.type == VideoType.video || videoModel.value.type == VideoType.liveTv) ||
+        ((videoModel.value.type == VideoType.video ||
+                videoModel.value.type == VideoType.liveTv) ||
             isResumingFromContinueWatch)) {
       isTrailer(false);
     }
@@ -1306,7 +1385,8 @@ class VideoPlayersController extends GetxController {
     }
 
     // For trailers, if URL is empty, try harder to get it from trailerData
-    if (isTrailer.value && (videoUrl.value.isEmpty || videoUrlType.value.isEmpty)) {
+    if (isTrailer.value &&
+        (videoUrl.value.isEmpty || videoUrlType.value.isEmpty)) {
       log('+-+-+-+-+-+-+-+-+-Trailer URL empty, checking trailerData...');
       if (videoModel.value.trailerData.isNotEmpty) {
         log('+-+-+-+-+-+-+-+-+-trailerData has ${videoModel.value.trailerData.length} items');
@@ -1314,7 +1394,8 @@ class VideoPlayersController extends GetxController {
           final trailer = videoModel.value.trailerData[i];
           log('+-+-+-+-+-+-+-+-+-Checking trailer[$i]: url=${trailer.url}, type=${trailer.urlType}');
         }
-        final trailer = videoModel.value.trailerData.firstWhereOrNull((v) => v.url.isNotEmpty) ??
+        final trailer = videoModel.value.trailerData
+                .firstWhereOrNull((v) => v.url.isNotEmpty) ??
             videoModel.value.trailerData.first;
         if (trailer.url.isNotEmpty) {
           log('+-+-+-+-+-+-+-+-+-Found trailer URL in trailerData: ${trailer.url.substring(0, trailer.url.length > 100 ? 100 : trailer.url.length)}..., type=${trailer.urlType}');
@@ -1347,18 +1428,23 @@ class VideoPlayersController extends GetxController {
     }
 
     if (videoUrl.isNotEmpty && videoUrlType.isNotEmpty) {
-      if (videoUrlType.value.toLowerCase() == PlayerTypes.youtube.toLowerCase()) {
+      if (videoUrlType.value.toLowerCase() ==
+          PlayerTypes.youtube.toLowerCase()) {
         await initializeYoutubePlayer();
-      } else if (videoLinkType.$1.toLowerCase() == PlayerTypes.embedded.toLowerCase() ||
+      } else if (videoLinkType.$1.toLowerCase() ==
+              PlayerTypes.embedded.toLowerCase() ||
           videoUrlType.value.toLowerCase() == PlayerTypes.vimeo.toLowerCase()) {
         String url = videoUrl.value;
-        if (videoUrlType.value.toLowerCase() == PlayerTypes.vimeo.toLowerCase()) {
+        if (videoUrlType.value.toLowerCase() ==
+            PlayerTypes.vimeo.toLowerCase()) {
           url = "https://vimeo.com/${url.split("/").last}";
           initializeWebViewPlayer(url);
-        } else if (videoUrlType.value.toLowerCase() == PlayerTypes.embedded.toLowerCase()) {
+        } else if (videoUrlType.value.toLowerCase() ==
+            PlayerTypes.embedded.toLowerCase()) {
           initializeWebViewPlayer(movieEmbedCode(videoUrl.value));
         }
-      } else if (videoUrlType.value.toLowerCase() == PlayerTypes.url.toLowerCase() ||
+      } else if (videoUrlType.value.toLowerCase() ==
+              PlayerTypes.url.toLowerCase() ||
           videoUrlType.value.toLowerCase() == PlayerTypes.hls.toLowerCase() ||
           videoUrlType.value.toLowerCase() == PlayerTypes.local.toLowerCase() ||
           videoUrlType.value.toLowerCase() == PlayerTypes.x265.toLowerCase()) {
@@ -1374,10 +1460,13 @@ class VideoPlayersController extends GetxController {
     YoutubePlayerController youtubeController = YoutubePlayerController(
       initialVideoId: videoUrl.value.getYouTubeId(),
       flags: YoutubePlayerFlags(
-        autoPlay: isTrailer.value ? true : isAutoPlay.value, // Always auto-play for trailers
+        autoPlay: isTrailer.value
+            ? true
+            : isAutoPlay.value, // Always auto-play for trailers
         enableCaption: false,
         hideControls: true,
-        isLive: getVideoLinkAndType().$1.toLowerCase() == PlayerTypes.hls.toLowerCase(),
+        isLive: getVideoLinkAndType().$1.toLowerCase() ==
+            PlayerTypes.hls.toLowerCase(),
       ),
     );
 
@@ -1427,7 +1516,8 @@ class VideoPlayersController extends GetxController {
         }
       });
     }
-    if (midRollAds.isNotEmpty && youtubeController.value.metaData.duration > Duration.zero) {
+    if (midRollAds.isNotEmpty &&
+        youtubeController.value.metaData.duration > Duration.zero) {
       calculateMidRollTimes(youtubeController.value.metaData.duration);
     }
   }
@@ -1444,9 +1534,12 @@ class VideoPlayersController extends GetxController {
       isBuffering(true);
       isInitializingPlayer(true);
 
-      final videoSource = getVideoPlatform(type: videoUrlType.value, videoURL: url);
-      final isX265Video = videoUrlType.value.toLowerCase() == PlayerTypes.x265.toLowerCase();
-      final isLocalVideo = videoUrlType.value.toLowerCase() == PlayerTypes.local.toLowerCase();
+      final videoSource =
+          getVideoPlatform(type: videoUrlType.value, videoURL: url);
+      final isX265Video =
+          videoUrlType.value.toLowerCase() == PlayerTypes.x265.toLowerCase();
+      final isLocalVideo =
+          videoUrlType.value.toLowerCase() == PlayerTypes.local.toLowerCase();
 
       if (isLocalVideo) {
         log("+-+-+-+-+-+-+-+-+-Local video initialization:");
@@ -1482,14 +1575,18 @@ class VideoPlayersController extends GetxController {
         shownMidRollAds.clear();
         shownOverlayAds.clear();
 
-        if (midRollAds.isNotEmpty && controller.totalVideoLength > Duration.zero) {
+        if (midRollAds.isNotEmpty &&
+            controller.totalVideoLength > Duration.zero) {
           calculateMidRollTimes(controller.totalVideoLength);
         }
 
         // For trailers, don't seek to watched time - start from beginning
-        if (!isTrailer.value && videoModel.value.watchedTime.isNotEmpty && !isResumingFromAd.value) {
+        if (!isTrailer.value &&
+            videoModel.value.watchedTime.isNotEmpty &&
+            !isResumingFromAd.value) {
           try {
-            final seekPosition = getWatchedTimeInDuration(videoModel.value.watchedTime);
+            final seekPosition =
+                getWatchedTimeInDuration(videoModel.value.watchedTime);
             controller.videoSeekForward(seekPosition);
           } catch (e) {
             log("Error parsing continueWatchDuration: ${e.toString()}");
@@ -1513,7 +1610,8 @@ class VideoPlayersController extends GetxController {
         // Handle different video types
         if (isLocalVideo) {
           _handleLocalVideoPlayback(controller);
-        } else if (videoUrlType.value.toLowerCase() == PlayerTypes.hls.toLowerCase()) {
+        } else if (videoUrlType.value.toLowerCase() ==
+            PlayerTypes.hls.toLowerCase()) {
           _handleHLSVideoPlayback(controller);
         } else if (isX265Video) {
           _handleX265VideoPlayback(controller);
@@ -1599,7 +1697,8 @@ class VideoPlayersController extends GetxController {
               } else {
                 log('+-+-+-+-+-+-+-+-+-ERROR: Local video failed to play');
                 isBuffering(false);
-                errorMessage.value = 'Unable to play local video. Please try again.';
+                errorMessage.value =
+                    'Unable to play local video. Please try again.';
               }
             });
           });
@@ -1648,7 +1747,8 @@ class VideoPlayersController extends GetxController {
     });
   }
 
-  void _handleInitializationError(dynamic error, bool isX265Video, bool isLocalVideo) {
+  void _handleInitializationError(
+      dynamic error, bool isX265Video, bool isLocalVideo) {
     final errorText = error.toString().toLowerCase();
 
     if (isX265Video) {
@@ -1657,15 +1757,20 @@ class VideoPlayersController extends GetxController {
           errorText.contains('exoplaybackexception') ||
           errorText.contains('codec') ||
           errorText.contains('decode')) {
-        errorMessage.value = 'This x265 video format is not supported on this device.';
+        errorMessage.value =
+            'This x265 video format is not supported on this device.';
       } else {
-        errorMessage.value = 'Failed to load x265 video. Please check your connection.';
+        errorMessage.value =
+            'Failed to load x265 video. Please check your connection.';
       }
     } else if (isLocalVideo) {
-      if (errorText.contains('file') || errorText.contains('path') || errorText.contains('not found')) {
+      if (errorText.contains('file') ||
+          errorText.contains('path') ||
+          errorText.contains('not found')) {
         errorMessage.value = 'Local video file not found or inaccessible.';
       } else {
-        errorMessage.value = 'Failed to load local video file. Please try again.';
+        errorMessage.value =
+            'Failed to load local video file. Please try again.';
       }
     }
   }
@@ -1693,7 +1798,8 @@ class VideoPlayersController extends GetxController {
             listenVideoEvent();
 
             // For Vimeo, try to inject some JavaScript to help with initialization
-            if (videoUrlType.value.toLowerCase() == PlayerTypes.vimeo.toLowerCase()) {
+            if (videoUrlType.value.toLowerCase() ==
+                PlayerTypes.vimeo.toLowerCase()) {
               _injectVimeoHelperScript();
             }
 
@@ -1742,12 +1848,16 @@ class VideoPlayersController extends GetxController {
             final decoded = jsonDecode(message.message);
 
             if (decoded['event'] == 'timeUpdate') {
-              final int current = decoded['currentTime'].toString().toDouble().toInt();
-              final int total = decoded['duration'].toString().toDouble().toInt();
+              final int current =
+                  decoded['currentTime'].toString().toDouble().toInt();
+              final int total =
+                  decoded['duration'].toString().toDouble().toInt();
               final position = Duration(seconds: current);
               final duration = Duration(seconds: total);
 
-              if (duration > Duration.zero && midRollAds.isNotEmpty && midRollAdSeconds.isEmpty) {
+              if (duration > Duration.zero &&
+                  midRollAds.isNotEmpty &&
+                  midRollAdSeconds.isEmpty) {
                 calculateMidRollTimes(duration);
               }
               _checkAndPlayAdsAtPosition(position);
@@ -1758,22 +1868,26 @@ class VideoPlayersController extends GetxController {
               if (!showSkipIntroOverlay.value) showSkipIntroButton();
 
               if (!isTrailer.value) {
-                final subtitle = availableSubtitleList
-                    .firstWhereOrNull((s) => s.start.inSeconds <= current && s.end.inSeconds >= current);
-                if (subtitle != null && subtitle.data != currentSubtitle.value) {
+                final subtitle = availableSubtitleList.firstWhereOrNull((s) =>
+                    s.start.inSeconds <= current && s.end.inSeconds >= current);
+                if (subtitle != null &&
+                    subtitle.data != currentSubtitle.value) {
                   currentSubtitle(subtitle.data);
-                } else if (subtitle == null && currentSubtitle.value.isNotEmpty) {
+                } else if (subtitle == null &&
+                    currentSubtitle.value.isNotEmpty) {
                   currentSubtitle('');
                 }
               }
             } else if (decoded['event'] == 'qualityChanged') {
               // Handle quality change from WebView
-              currentQuality(decoded['quality'] ?? QualityConstants.defaultQuality.toLowerCase());
+              currentQuality(decoded['quality'] ??
+                  QualityConstants.defaultQuality.toLowerCase());
             } else if (decoded['event'] == 'subtitleChanged') {
               // Handle subtitle change from WebView
               final subtitleId = decoded['subtitleId'];
               if (subtitleId != null) {
-                final selectedSubtitle = subtitleList.firstWhereOrNull((s) => s.id.toString() == subtitleId);
+                final selectedSubtitle = subtitleList
+                    .firstWhereOrNull((s) => s.id.toString() == subtitleId);
                 if (selectedSubtitle != null) {
                   selectedSubtitleModel(selectedSubtitle);
                   loadSubtitles(selectedSubtitle);
@@ -1820,7 +1934,8 @@ class VideoPlayersController extends GetxController {
           'Referer': DOMAIN_URL,
           'User-Agent':
               'Mozilla/5.0 (Linux; Android 10; SM-G973F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept':
+              'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
           'Accept-Language': 'en-US,en;q=0.5',
           'Accept-Encoding': 'gzip, deflate',
           'Connection': 'keep-alive',
@@ -1856,7 +1971,8 @@ class VideoPlayersController extends GetxController {
         'currentSubtitle': selectedSubtitleModel.value.id,
       };
 
-      webViewController.value.runJavaScript('window.postMessage(${jsonEncode(videoData)}, "*");');
+      webViewController.value
+          .runJavaScript('window.postMessage(${jsonEncode(videoData)}, "*");');
     } catch (e) {
       log("Error sending video data to WebView: $e");
     }
@@ -1864,7 +1980,8 @@ class VideoPlayersController extends GetxController {
 
   // Check if WebView is currently active
   bool isWebViewActive() {
-    return videoUrlType.value.toLowerCase() == PlayerTypes.embedded.toLowerCase() ||
+    return videoUrlType.value.toLowerCase() ==
+            PlayerTypes.embedded.toLowerCase() ||
         videoUrlType.value.toLowerCase() == PlayerTypes.vimeo.toLowerCase();
   }
 
@@ -1990,13 +2107,15 @@ class VideoPlayersController extends GetxController {
   //endregion (MediaKit removed)
 
   void continueWatch() {
-    if (videoModel.value.watchedTime.isNotEmpty && videoModel.value.watchedTime != '00:00:00') {
+    if (videoModel.value.watchedTime.isNotEmpty &&
+        videoModel.value.watchedTime != '00:00:00') {
       try {
         final parts = videoModel.value.watchedTime.split(':');
         final hours = int.parse(parts[0]);
         final minutes = int.parse(parts[1]);
         final seconds = int.parse(parts[2]);
-        final seekPosition = Duration(hours: hours, minutes: minutes, seconds: seconds);
+        final seekPosition =
+            Duration(hours: hours, minutes: minutes, seconds: seconds);
 
         if (podPlayerController.value.isInitialised) {
           podPlayerController.value.videoSeekForward(seekPosition);
@@ -2007,8 +2126,9 @@ class VideoPlayersController extends GetxController {
         } else if (isWebViewActive()) {
           // WebView seek to position
           final seekSeconds = seekPosition.inSeconds;
-          webViewController.value.runJavaScript('const video = document.querySelector("video"); '
-              'if (video) { video.currentTime = $seekSeconds; }');
+          webViewController.value
+              .runJavaScript('const video = document.querySelector("video"); '
+                  'if (video) { video.currentTime = $seekSeconds; }');
         } else {
           log("Video not initialized or not playing");
         }
@@ -2022,9 +2142,15 @@ class VideoPlayersController extends GetxController {
     final position = getVideoCurrentPosition();
     if (Get.isRegistered<TvShowPreviewController>()) {
       final tvShowPreviewCont = Get.find<TvShowPreviewController>();
-      hasNextVideo(tvShowPreviewCont.seasonIdWiseEpisodeList[tvShowPreviewCont.selectSeason.value.seasonId] != null &&
+      hasNextVideo(tvShowPreviewCont.seasonIdWiseEpisodeList[
+                  tvShowPreviewCont.selectSeason.value.seasonId] !=
+              null &&
           tvShowPreviewCont.currentEpisodeIndex.value <
-              (tvShowPreviewCont.seasonIdWiseEpisodeList[tvShowPreviewCont.selectSeason.value.seasonId]!.length - 1));
+              (tvShowPreviewCont
+                      .seasonIdWiseEpisodeList[
+                          tvShowPreviewCont.selectSeason.value.seasonId]!
+                      .length -
+                  1));
     }
     if (podPlayerController.value.videoPlayerValue != null) {
       podPlayerController.value.videoPlayerValue!.position;
@@ -2035,7 +2161,8 @@ class VideoPlayersController extends GetxController {
       playNextVideo(remaining.inSeconds <= threshold);
       if (podPlayerController.value.isInitialised) {
         if (!isTrailer.value) {
-          final subtitle = availableSubtitleList.firstWhereOrNull((s) => s.start <= position && s.end >= position);
+          final subtitle = availableSubtitleList.firstWhereOrNull(
+              (s) => s.start <= position && s.end >= position);
           if (subtitle != null && subtitle.data != currentSubtitle.value) {
             currentSubtitle(subtitle.data);
           } else if (subtitle == null && currentSubtitle.value.isNotEmpty) {
@@ -2060,14 +2187,16 @@ class VideoPlayersController extends GetxController {
       final threshold = duration.inSeconds * 0.20;
       playNextVideo(remaining.inSeconds <= threshold);
       if (!isTrailer.value) {
-        final subtitle = availableSubtitleList.firstWhereOrNull((s) => s.start <= position && s.end >= position);
+        final subtitle = availableSubtitleList
+            .firstWhereOrNull((s) => s.start <= position && s.end >= position);
         if (subtitle != null && subtitle.data != currentSubtitle.value) {
           currentSubtitle(subtitle.data);
         } else if (subtitle == null && currentSubtitle.value.isNotEmpty) {
           currentSubtitle('');
         }
       }
-      if (youtubePlayerController.value.value.playerState == PlayerState.ended) {
+      if (youtubePlayerController.value.value.playerState ==
+          PlayerState.ended) {
         isVideoCompleted(true);
         isBuffering(false);
         isLoading(false);
@@ -2088,7 +2217,8 @@ class VideoPlayersController extends GetxController {
         playNextVideo(remaining.inSeconds <= threshold);
 
         if (!isTrailer.value) {
-          final subtitle = availableSubtitleList.firstWhereOrNull((s) => s.start <= position && s.end >= position);
+          final subtitle = availableSubtitleList.firstWhereOrNull(
+              (s) => s.start <= position && s.end >= position);
           if (subtitle != null && subtitle.data != currentSubtitle.value) {
             currentSubtitle(subtitle.data);
           } else if (subtitle == null && currentSubtitle.value.isNotEmpty) {
@@ -2110,7 +2240,7 @@ class VideoPlayersController extends GetxController {
       }
     }
     if (playNextVideo.value) {
-      if(!isSkipFocusPermission) return;
+      if (!isSkipFocusPermission) return;
       skipNextVideoFocusNode.requestFocus();
     }
   }
@@ -2129,7 +2259,9 @@ class VideoPlayersController extends GetxController {
       return;
     }
 
-    if (isAdPlaying.value || isResumingFromAd.value || isInitializingPlayer.value) {
+    if (isAdPlaying.value ||
+        isResumingFromAd.value ||
+        isInitializingPlayer.value) {
       return;
     }
 
@@ -2152,7 +2284,8 @@ class VideoPlayersController extends GetxController {
     /// --- Mid-roll Ad Trigger ---
     int? nearbyMidRollAd;
     for (final adSecond in midRollAdSeconds) {
-      if ((currentSecond - adSecond).abs() <= 1 && !shownMidRollAds.contains(adSecond)) {
+      if ((currentSecond - adSecond).abs() <= 1 &&
+          !shownMidRollAds.contains(adSecond)) {
         nearbyMidRollAd = adSecond;
         break;
       }
@@ -2160,7 +2293,7 @@ class VideoPlayersController extends GetxController {
 
     if (nearbyMidRollAd != null && midRollAds.isNotEmpty) {
       shownMidRollAds.add(nearbyMidRollAd);
-      final adToPlay = midRollAds[currentAdIndex.value % midRollAds.length];  
+      final adToPlay = midRollAds[currentAdIndex.value % midRollAds.length];
       currentAdIndex.value++;
       await playAd(adToPlay);
       return;
@@ -2170,7 +2303,8 @@ class VideoPlayersController extends GetxController {
     if (totalDuration.inSeconds > 30 && !isPostRollAdShown.value) {
       final isEpisode = _isEpisodeContent();
       final postRollPercentage = isEpisode ? 0.7 : 0.9;
-      final postRollPosition = (totalDuration.inSeconds * postRollPercentage).round();
+      final postRollPosition =
+          (totalDuration.inSeconds * postRollPercentage).round();
 
       if (currentSecond >= postRollPosition && postRollPosition > 30) {
         if (postRollAds.isNotEmpty) {
@@ -2194,8 +2328,11 @@ class VideoPlayersController extends GetxController {
     }
 
     // Find any overlay ads that should be triggered now
-    final readyAds =
-        overlayAds.where((ad) => currentSecond >= ad.startTime && !shownOverlayAds.contains(ad.startTime)).toList();
+    final readyAds = overlayAds
+        .where((ad) =>
+            currentSecond >= ad.startTime &&
+            !shownOverlayAds.contains(ad.startTime))
+        .toList();
 
     if (readyAds.isNotEmpty) {
       // Show the first ready ad
@@ -2224,12 +2361,15 @@ class VideoPlayersController extends GetxController {
         final duration = podPlayerController.value.totalVideoLength;
         if (!showSkipIntroOverlay.value) showSkipIntroButton();
 
-        if (duration > Duration.zero && midRollAds.isNotEmpty && midRollAdSeconds.isEmpty) {
+        if (duration > Duration.zero &&
+            midRollAds.isNotEmpty &&
+            midRollAdSeconds.isEmpty) {
           calculateMidRollTimes(duration);
         }
         _checkAndPlayAdsAtPosition(position);
 
-        isVideoPlaying(podPlayerController.value.videoPlayerValue?.isPlaying ?? false);
+        isVideoPlaying(
+            podPlayerController.value.videoPlayerValue?.isPlaying ?? false);
         isLoading(!podPlayerController.value.isVideoPlaying);
         currentVideoPosition(position);
         currentVideoTotalDuration(duration);
@@ -2249,7 +2389,9 @@ class VideoPlayersController extends GetxController {
         final duration = youtubePlayerController.value.value.metaData.duration;
         if (!showSkipIntroOverlay.value) showSkipIntroButton();
 
-        if (duration > Duration.zero && midRollAds.isNotEmpty && midRollAdSeconds.isEmpty) {
+        if (duration > Duration.zero &&
+            midRollAds.isNotEmpty &&
+            midRollAdSeconds.isEmpty) {
           calculateMidRollTimes(duration);
         }
         _checkAndPlayAdsAtPosition(position);
@@ -2305,21 +2447,24 @@ class VideoPlayersController extends GetxController {
     if (isWebViewActive()) {
       // WebView play/pause control
       final playCommand = isVideoPlaying.value ? 'pause()' : 'play()';
-      webViewController.value.runJavaScript('document.querySelector("video").$playCommand;');
-    } 
+      webViewController.value
+          .runJavaScript('document.querySelector("video").$playCommand;');
+    }
     if (youtubePlayerController.value.value.isReady) {
       try {
         youtubePlayerController.value.value.isPlaying
             ? youtubePlayerController.value.pause()
             : youtubePlayerController.value.play();
-      } catch(e) {
+      } catch (e) {
         log('+-+-+-+-+-+-+-+-+-Error during YouTube toggle play/pause: $e');
       }
-    }   
+    }
     if (podPlayerController.value.isInitialised) {
       try {
-        podPlayerController.value.isVideoPlaying ? podPlayerController.value.pause() : podPlayerController.value.play();
-      } catch(e) {
+        podPlayerController.value.isVideoPlaying
+            ? podPlayerController.value.pause()
+            : podPlayerController.value.play();
+      } catch (e) {
         log('+-+-+-+-+-+-+-+-+-Error during PodPlayer toggle play/pause: $e');
       }
     }
@@ -2331,35 +2476,47 @@ class VideoPlayersController extends GetxController {
         youtubePlayerController.value.seekTo(
           duration ??
               Duration(
-                seconds: (youtubePlayerController.value.value.metaData.duration.inSeconds >
-                        (youtubePlayerController.value.value.position.inSeconds + appConfigs.value.forwardSeekSeconds))
-                    ? youtubePlayerController.value.value.position.inSeconds + appConfigs.value.forwardSeekSeconds
-                    : youtubePlayerController.value.value.metaData.duration.inSeconds,
+                seconds: (youtubePlayerController
+                            .value.value.metaData.duration.inSeconds >
+                        (youtubePlayerController
+                                .value.value.position.inSeconds +
+                            appConfigs.value.forwardSeekSeconds))
+                    ? youtubePlayerController.value.value.position.inSeconds +
+                        appConfigs.value.forwardSeekSeconds
+                    : youtubePlayerController
+                        .value.value.metaData.duration.inSeconds,
               ),
         );
-      } catch(e) {
+      } catch (e) {
         log('+-+-+-+-+-+-+-+-+-Error during YouTube seek forward: $e');
       }
-    } 
+    }
     if (podPlayerController.value.isVideoPlaying) {
       try {
         podPlayerController.value.videoSeekForward(
           duration ??
               Duration(
-                seconds: (podPlayerController.value.videoPlayerValue!.duration.inSeconds >
-                        (podPlayerController.value.videoPlayerValue!.position.inSeconds + appConfigs.value.forwardSeekSeconds))
-                    ? podPlayerController.value.videoPlayerValue!.position.inSeconds + appConfigs.value.forwardSeekSeconds
-                    : podPlayerController.value.videoPlayerValue!.duration.inSeconds,
+                seconds: (podPlayerController
+                            .value.videoPlayerValue!.duration.inSeconds >
+                        (podPlayerController
+                                .value.videoPlayerValue!.position.inSeconds +
+                            appConfigs.value.forwardSeekSeconds))
+                    ? podPlayerController
+                            .value.videoPlayerValue!.position.inSeconds +
+                        appConfigs.value.forwardSeekSeconds
+                    : podPlayerController
+                        .value.videoPlayerValue!.duration.inSeconds,
               ),
         );
-      } catch(e) {
+      } catch (e) {
         log('+-+-+-+-+-+-+-+-+-Error during PodPlayer seek forward: $e');
       }
-    } 
+    }
     if (isWebViewActive()) {
       // WebView seek forward
       final seekSeconds = duration?.inSeconds ?? 5;
-      webViewController.value.runJavaScript('const video = document.querySelector("video"); '
+      webViewController.value.runJavaScript(
+          'const video = document.querySelector("video"); '
           'if (video) { '
           '  const newTime = Math.min(video.currentTime + $seekSeconds, video.duration); '
           '  video.currentTime = newTime; '
@@ -2372,35 +2529,43 @@ class VideoPlayersController extends GetxController {
       try {
         youtubePlayerController.value.seekTo(
           Duration(
-            seconds: youtubePlayerController.value.value.position.inSeconds >= appConfigs.value.backwardSeekSeconds
-                ? youtubePlayerController.value.value.position.inSeconds - appConfigs.value.backwardSeekSeconds
+            seconds: youtubePlayerController.value.value.position.inSeconds >=
+                    appConfigs.value.backwardSeekSeconds
+                ? youtubePlayerController.value.value.position.inSeconds -
+                    appConfigs.value.backwardSeekSeconds
                 : youtubePlayerController.value.value.position.inSeconds,
           ),
         );
-      } catch(e) {
+      } catch (e) {
         log('+-+-+-+-+-+-+-+-+-Error during YouTube seek backward: $e');
       }
-    } 
+    }
     if (podPlayerController.value.isVideoPlaying) {
       try {
         podPlayerController.value.videoSeekBackward(
           Duration(
-            seconds: podPlayerController.value.videoPlayerValue!.position.inSeconds >= appConfigs.value.backwardSeekSeconds
-                ? podPlayerController.value.videoPlayerValue!.position.inSeconds - appConfigs.value.backwardSeekSeconds
-                : podPlayerController.value.videoPlayerValue!.position.inSeconds,
+            seconds: podPlayerController
+                        .value.videoPlayerValue!.position.inSeconds >=
+                    appConfigs.value.backwardSeekSeconds
+                ? podPlayerController
+                        .value.videoPlayerValue!.position.inSeconds -
+                    appConfigs.value.backwardSeekSeconds
+                : podPlayerController
+                    .value.videoPlayerValue!.position.inSeconds,
           ),
         );
-      } catch(e) {
+      } catch (e) {
         log('+-+-+-+-+-+-+-+-+-Error during PodPlayer seek backward: $e');
       }
-    } 
+    }
     if (isWebViewActive()) {
       // WebView seek backward
-      webViewController.value.runJavaScript('const video = document.querySelector("video"); '
-          'if (video) { '
-          '  const newTime = Math.max(video.currentTime - 5, 0); '
-          '  video.currentTime = newTime; '
-          '}');
+      webViewController.value
+          .runJavaScript('const video = document.querySelector("video"); '
+              'if (video) { '
+              '  const newTime = Math.max(video.currentTime - 5, 0); '
+              '  video.currentTime = newTime; '
+              '}');
     }
   }
 
@@ -2416,7 +2581,8 @@ class VideoPlayersController extends GetxController {
             podPlayerController.value.play();
           }
         });
-      } else if (videoUrlType.value.toLowerCase() == PlayerTypes.local.toLowerCase()) {
+      } else if (videoUrlType.value.toLowerCase() ==
+          PlayerTypes.local.toLowerCase()) {
         // Special handling for Local videos
         Future.delayed(Duration(milliseconds: 500), () {
           if (!podPlayerController.value.isVideoPlaying) {
@@ -2427,7 +2593,8 @@ class VideoPlayersController extends GetxController {
       }
     } else if (isWebViewActive()) {
       // WebView play
-      webViewController.value.runJavaScript('document.querySelector("video").play();');
+      webViewController.value
+          .runJavaScript('document.querySelector("video").play();');
     }
 
     isVideoPlaying(true);
@@ -2440,7 +2607,8 @@ class VideoPlayersController extends GetxController {
       podPlayerController.value.pause();
     } else if (isWebViewActive()) {
       // WebView pause
-      webViewController.value.runJavaScript('document.querySelector("video").pause();');
+      webViewController.value
+          .runJavaScript('document.querySelector("video").pause();');
     }
     isVideoPlaying(false);
   }
@@ -2494,14 +2662,17 @@ class VideoPlayersController extends GetxController {
             !isBuffering.value &&
             skipNextVideoFocusNode.canRequestFocus &&
             !skipNextVideoFocusNode.hasFocus) {
-          if(!isSkipFocusPermission) return;
+          if (!isSkipFocusPermission) return;
           skipNextVideoFocusNode.requestFocus();
           isSkipNextFocused(true);
         }
       });
     }
 
-    _hideProgressBarTimer = Timer(isTrailer.value ? const Duration(seconds: 5) : const Duration(seconds: 10), () {
+    _hideProgressBarTimer = Timer(
+        isTrailer.value
+            ? const Duration(seconds: 5)
+            : const Duration(seconds: 10), () {
       requestVideoFocus();
       isProgressBarVisible(false);
       toggleSkipNextFocus(false);
@@ -2583,22 +2754,31 @@ class VideoPlayersController extends GetxController {
       VideoData? selectedLink = isQuality
           ? videoQualities.firstWhereOrNull((link) =>
               link.quality.toLowerCase() == quality.toLowerCase() ||
-              (quality.toLowerCase() == QualityConstants.defaultQuality.toLowerCase() &&
+              (quality.toLowerCase() ==
+                      QualityConstants.defaultQuality.toLowerCase() &&
                   (link.quality.isEmpty ||
-                      link.quality.toLowerCase() == QualityConstants.defaultQuality.toLowerCase())))
-          : VideoData(url: quality, urlType: type, quality: QualityConstants.defaultQuality.toLowerCase());
+                      link.quality.toLowerCase() ==
+                          QualityConstants.defaultQuality.toLowerCase())))
+          : VideoData(
+              url: quality,
+              urlType: type,
+              quality: QualityConstants.defaultQuality.toLowerCase());
 
       // If no link found for quality selection, try to find default quality
       if (isQuality && selectedLink == null) {
-        if (quality.toLowerCase() == QualityConstants.defaultQuality.toLowerCase()) {
+        if (quality.toLowerCase() ==
+            QualityConstants.defaultQuality.toLowerCase()) {
           selectedLink = videoModel.value.defaultQuality;
           if (selectedLink.url.isEmpty && videoQualities.isNotEmpty) {
             // Fallback to first available quality if default not found
-            selectedLink = videoQualities.firstWhereOrNull((link) => link.url.isNotEmpty) ?? videoQualities.first;
+            selectedLink = videoQualities
+                    .firstWhereOrNull((link) => link.url.isNotEmpty) ??
+                videoQualities.first;
           }
         } else {
           // Try to find by exact match (case insensitive)
-          selectedLink = videoQualities.firstWhereOrNull((link) => link.quality.toLowerCase() == quality.toLowerCase());
+          selectedLink = videoQualities.firstWhereOrNull(
+              (link) => link.quality.toLowerCase() == quality.toLowerCase());
         }
       }
 
@@ -2609,22 +2789,26 @@ class VideoPlayersController extends GetxController {
         return;
       }
 
-      currentQuality(
-          selectedLink.quality.isNotEmpty ? selectedLink.quality : QualityConstants.defaultQuality.toLowerCase());
+      currentQuality(selectedLink.quality.isNotEmpty
+          ? selectedLink.quality
+          : QualityConstants.defaultQuality.toLowerCase());
 
       if (newVideoData != null) {
         videoModel = newVideoData.obs;
 
         if (newVideoData.videoQualities.isNotEmpty) {
           availableQualities(newVideoData.videoQualities
-              .map((link) => link.quality.replaceAll(RegExp(r'[pPkK]'), '').toInt())
+              .map((link) =>
+                  link.quality.replaceAll(RegExp(r'[pPkK]'), '').toInt())
               .toList());
           videoQualities.clear();
           videoQualities(newVideoData.videoQualities);
 
           // Check if default_quality already exists in the list before inserting
           final hasDefaultQuality = videoQualities.any((link) =>
-              link.quality.isEmpty || link.quality.toLowerCase() == QualityConstants.defaultQuality.toLowerCase());
+              link.quality.isEmpty ||
+              link.quality.toLowerCase() ==
+                  QualityConstants.defaultQuality.toLowerCase());
 
           if (!hasDefaultQuality) {
             videoQualities.insert(
@@ -2637,7 +2821,9 @@ class VideoPlayersController extends GetxController {
           } else {
             // Move existing default_quality to index 0
             final defaultQualityEntry = videoQualities.firstWhere((link) =>
-                link.quality.isEmpty || link.quality.toLowerCase() == QualityConstants.defaultQuality.toLowerCase());
+                link.quality.isEmpty ||
+                link.quality.toLowerCase() ==
+                    QualityConstants.defaultQuality.toLowerCase());
             if (videoQualities.indexOf(defaultQualityEntry) != 0) {
               videoQualities.remove(defaultQualityEntry);
               videoQualities.insert(0, defaultQualityEntry);
@@ -2649,17 +2835,25 @@ class VideoPlayersController extends GetxController {
         subtitleList.clear();
         if (newVideoData.subtitleList.isNotEmpty) {
           subtitleList(newVideoData.subtitleList);
-          subtitleList.insert(0, SubtitleModel(id: -1, language: locale.value.off.capitalizeEachWord()));
+          subtitleList.insert(
+              0,
+              SubtitleModel(
+                  id: -1, language: locale.value.off.capitalizeEachWord()));
 
           /// Load default subtitle if available
-          if (subtitleList.any((element) => element.isDefaultLanguage.getBoolInt())) {
-            selectedSubtitleModel(subtitleList.firstWhere((element) => element.isDefaultLanguage.getBoolInt()));
+          if (subtitleList
+              .any((element) => element.isDefaultLanguage.getBoolInt())) {
+            selectedSubtitleModel(subtitleList.firstWhere(
+                (element) => element.isDefaultLanguage.getBoolInt()));
             loadSubtitles(selectedSubtitleModel.value);
           } else {
             currentSubtitle('');
           }
         } else {
-          subtitleList.insert(0, SubtitleModel(id: -1, language: locale.value.off.capitalizeEachWord()));
+          subtitleList.insert(
+              0,
+              SubtitleModel(
+                  id: -1, language: locale.value.off.capitalizeEachWord()));
         }
         // Reset skip intro state when changing video
         skipIntroHandled = false;
@@ -2689,22 +2883,26 @@ class VideoPlayersController extends GetxController {
       currentAdIndex.value = 0;
       midRollAdSeconds.clear();
       pause();
-      if (videoUrlType.value.toLowerCase() == PlayerTypes.youtube.toLowerCase()) {
+      if (videoUrlType.value.toLowerCase() ==
+          PlayerTypes.youtube.toLowerCase()) {
         if (youtubePlayerController.value.value.isPlaying) {
           isProgressBarVisible.value = false;
           youtubePlayerController.value.dispose();
         }
         await initializeYoutubePlayer();
-      } else if (videoUrlType.value.toLowerCase() == PlayerTypes.embedded.toLowerCase() ||
+      } else if (videoUrlType.value.toLowerCase() ==
+              PlayerTypes.embedded.toLowerCase() ||
           videoUrlType.value.toLowerCase() == PlayerTypes.vimeo.toLowerCase()) {
         String url = videoUrl.value;
-        if (videoUrlType.value.toLowerCase() == PlayerTypes.vimeo.toLowerCase()) {
+        if (videoUrlType.value.toLowerCase() ==
+            PlayerTypes.vimeo.toLowerCase()) {
           url = "https://vimeo.com/${url.split("/").last}";
         } else {
           url = movieEmbedCode(videoUrl.value);
         }
         initializeWebViewPlayer(url);
-      } else if (videoUrlType.value.toLowerCase() == PlayerTypes.hls.toLowerCase() ||
+      } else if (videoUrlType.value.toLowerCase() ==
+              PlayerTypes.hls.toLowerCase() ||
           videoUrlType.value.toLowerCase() == PlayerTypes.url.toLowerCase() ||
           videoUrlType.value.toLowerCase() == PlayerTypes.local.toLowerCase() ||
           videoUrlType.value.toLowerCase() == PlayerTypes.x265.toLowerCase()) {
@@ -2712,7 +2910,8 @@ class VideoPlayersController extends GetxController {
         podPlayerController.value.pause();
 
         // Use unified platform mapping so x265 requests include headers (Referer/User-Agent).
-        final newVideoSource = getVideoPlatform(type: type, videoURL: videoUrl.value);
+        final newVideoSource =
+            getVideoPlatform(type: type, videoURL: videoUrl.value);
 
         if (podPlayerController.value.isInitialised) {
           await podPlayerController.value
@@ -2731,12 +2930,17 @@ class VideoPlayersController extends GetxController {
             log("Error during changeVideoQuality: ${error.toString()}");
             handleError(error.toString());
             final errorText = error.toString().toLowerCase();
-            if (videoUrlType.value.toLowerCase() == PlayerTypes.local.toLowerCase()) {
+            if (videoUrlType.value.toLowerCase() ==
+                PlayerTypes.local.toLowerCase()) {
               log('+-+-+-+-+-+-+-+-+-Local video change failed: ${error.toString()}');
-              if (errorText.contains('file') || errorText.contains('path') || errorText.contains('not found')) {
-                errorMessage.value = 'Local video file not found or inaccessible. Please check the file path.';
+              if (errorText.contains('file') ||
+                  errorText.contains('path') ||
+                  errorText.contains('not found')) {
+                errorMessage.value =
+                    'Local video file not found or inaccessible. Please check the file path.';
               } else {
-                errorMessage.value = 'Failed to load local video file. Please try again.';
+                errorMessage.value =
+                    'Failed to load local video file. Please try again.';
               }
             }
           }).whenComplete(() {
@@ -2762,14 +2966,19 @@ class VideoPlayersController extends GetxController {
       if (val is List<VideoData>) {
         if (val.isNotEmpty) {
           (val).map((e) => log(e.toQualityJson()));
-          availableQualities(val.map((link) => link.quality.replaceAll(RegExp(r'[pPkK]'), '').toInt()).toList());
+          availableQualities(val
+              .map((link) =>
+                  link.quality.replaceAll(RegExp(r'[pPkK]'), '').toInt())
+              .toList());
           videoQualities.clear();
           videoQualities(val);
 
           // Remove any duplicate default_quality entries first
           final defaultQualityEntries = videoQualities
               .where((link) =>
-                  link.quality.isEmpty || link.quality.toLowerCase() == QualityConstants.defaultQuality.toLowerCase())
+                  link.quality.isEmpty ||
+                  link.quality.toLowerCase() ==
+                      QualityConstants.defaultQuality.toLowerCase())
               .toList();
 
           // Keep only the first default_quality entry and remove others
@@ -2780,24 +2989,35 @@ class VideoPlayersController extends GetxController {
           }
 
           // Check if default_quality exists in the list
-          final defaultQualityFromList = videoQualities.firstWhereOrNull((link) =>
-              link.quality.isEmpty || link.quality.toLowerCase() == QualityConstants.defaultQuality.toLowerCase());
+          final defaultQualityFromList = videoQualities.firstWhereOrNull(
+              (link) =>
+                  link.quality.isEmpty ||
+                  link.quality.toLowerCase() ==
+                      QualityConstants.defaultQuality.toLowerCase());
 
           if (defaultQualityFromList == null) {
             // If no default_quality found, insert a synthetic one at index 0
             // Use the first available quality's URL if videoUrl is empty
             final urlToUse = videoUrl.value.isNotEmpty
                 ? videoUrl.value
-                : (videoQualities.firstWhereOrNull((link) => link.url.isNotEmpty)?.url ?? videoQualities.first.url);
+                : (videoQualities
+                        .firstWhereOrNull((link) => link.url.isNotEmpty)
+                        ?.url ??
+                    videoQualities.first.url);
             final typeToUse = videoUrlType.value.isNotEmpty
                 ? videoUrlType.value
-                : (videoQualities.firstWhereOrNull((link) => link.url.isNotEmpty)?.urlType ??
+                : (videoQualities
+                        .firstWhereOrNull((link) => link.url.isNotEmpty)
+                        ?.urlType ??
                     videoQualities.first.urlType);
 
             videoQualities.insert(
                 0,
                 VideoData(
-                    id: -1, url: urlToUse, urlType: typeToUse, quality: QualityConstants.defaultQuality.toLowerCase()));
+                    id: -1,
+                    url: urlToUse,
+                    urlType: typeToUse,
+                    quality: QualityConstants.defaultQuality.toLowerCase()));
           } else {
             // Move default_quality to index 0 if it's not already there
             if (videoQualities.indexOf(defaultQualityFromList) != 0) {
@@ -2822,7 +3042,8 @@ class VideoPlayersController extends GetxController {
 
             // For trailers, check trailerData first
             if (isTrailer.value && videoModel.value.trailerData.isNotEmpty) {
-              final trailer = videoModel.value.trailerData.firstWhereOrNull((v) => v.url.isNotEmpty) ??
+              final trailer = videoModel.value.trailerData
+                      .firstWhereOrNull((v) => v.url.isNotEmpty) ??
                   videoModel.value.trailerData.first;
               if (trailer.url.isNotEmpty) {
                 log('+-+-+-+-+-+-+-+-+-Bootstrapping trailer player from trailerData: type=${trailer.urlType}, url=${trailer.url.substring(0, trailer.url.length > 100 ? 100 : trailer.url.length)}...');
@@ -2838,7 +3059,9 @@ class VideoPlayersController extends GetxController {
 
             // For non-trailers or if trailerData is empty, prefer default_quality from videoQualities
             final defaultQuality = videoQualities.firstWhereOrNull((v) =>
-                (v.quality.isEmpty || v.quality.toLowerCase() == QualityConstants.defaultQuality.toLowerCase()) &&
+                (v.quality.isEmpty ||
+                    v.quality.toLowerCase() ==
+                        QualityConstants.defaultQuality.toLowerCase()) &&
                 v.url.isNotEmpty);
             final primary = defaultQuality ??
                 videoQualities.firstWhereOrNull((v) => v.url.isNotEmpty) ??
@@ -2853,12 +3076,16 @@ class VideoPlayersController extends GetxController {
                 log('+-+-+-+-+-+-+-+-+-WARNING: Using videoQualities for trailer (should use trailerData instead)');
               }
 
-              if (videoUrlType.value.toLowerCase() == PlayerTypes.youtube.toLowerCase()) {
+              if (videoUrlType.value.toLowerCase() ==
+                  PlayerTypes.youtube.toLowerCase()) {
                 initializeYoutubePlayer();
-              } else if (videoUrlType.value.toLowerCase() == PlayerTypes.embedded.toLowerCase() ||
-                  videoUrlType.value.toLowerCase() == PlayerTypes.vimeo.toLowerCase()) {
+              } else if (videoUrlType.value.toLowerCase() ==
+                      PlayerTypes.embedded.toLowerCase() ||
+                  videoUrlType.value.toLowerCase() ==
+                      PlayerTypes.vimeo.toLowerCase()) {
                 String url = videoUrl.value;
-                if (videoUrlType.value.toLowerCase() == PlayerTypes.vimeo.toLowerCase()) {
+                if (videoUrlType.value.toLowerCase() ==
+                    PlayerTypes.vimeo.toLowerCase()) {
                   url = "https://vimeo.com/${url.split("/").last}";
                 } else {
                   url = movieEmbedCode(videoUrl.value);
@@ -2909,10 +3136,15 @@ class VideoPlayersController extends GetxController {
           (val).map((e) => log(e.toJson()));
           subtitleList.clear();
           subtitleList.assignAll(val);
-          subtitleList.insert(0, SubtitleModel(id: -1, language: locale.value.off.capitalizeEachWord()));
+          subtitleList.insert(
+              0,
+              SubtitleModel(
+                  id: -1, language: locale.value.off.capitalizeEachWord()));
 
-          if (subtitleList.any((element) => element.isDefaultLanguage.getBoolInt())) {
-            final defaultSubtitle = subtitleList.firstWhere((element) => element.isDefaultLanguage.getBoolInt());
+          if (subtitleList
+              .any((element) => element.isDefaultLanguage.getBoolInt())) {
+            final defaultSubtitle = subtitleList.firstWhere(
+                (element) => element.isDefaultLanguage.getBoolInt());
             log("[SUBTITLE] Default subtitle found: language=${defaultSubtitle.language}, id=${defaultSubtitle.id}");
             selectedSubtitleModel(defaultSubtitle);
             await loadSubtitles(selectedSubtitleModel.value);
@@ -3000,7 +3232,8 @@ class VideoPlayersController extends GetxController {
           try {
             content = utf8.decode(response.bodyBytes);
           } catch (e) {
-            final filtered = response.bodyBytes.where((b) => b != 0x00).toList();
+            final filtered =
+                response.bodyBytes.where((b) => b != 0x00).toList();
 
             try {
               content = utf8.decode(filtered);
@@ -3043,12 +3276,14 @@ class VideoPlayersController extends GetxController {
           if (youtubePlayerController.value.value.isPlaying) {
             updateCurrentSubtitle(youtubePlayerController.value.value.position);
           } else if (podPlayerController.value.isInitialised) {
-            updateCurrentSubtitle(podPlayerController.value.currentVideoPosition);
+            updateCurrentSubtitle(
+                podPlayerController.value.currentVideoPosition);
           }
           log("[SUBTITLE] Subtitle loaded successfully from network: language=${subtitle.language}, total_duration=${DateTime.now().difference(downloadStartTime).inMilliseconds}ms");
         } else {
           log("[SUBTITLE] Failed to download subtitle: language=${subtitle.language}, HTTP ${response.statusCode}");
-          throw Exception('Subtitle file not found: HTTP ${response.statusCode}');
+          throw Exception(
+              'Subtitle file not found: HTTP ${response.statusCode}');
         }
       } else {
         log("[SUBTITLE] Invalid subtitle URL or format: language=${subtitle.language}, url=$rawUrl");
@@ -3072,9 +3307,10 @@ class VideoPlayersController extends GetxController {
 
   Future<void> updateCurrentSubtitle(Duration position) async {
     if (availableSubtitleList.isNotEmpty) {
-      final subtitle = availableSubtitleList.firstWhereOrNull((s) => s.start <= position && s.end >= position);
+      final subtitle = availableSubtitleList
+          .firstWhereOrNull((s) => s.start <= position && s.end >= position);
       if (subtitle != null && subtitle.data != currentSubtitle.value) {
-        if(isTrailer.value) return;
+        if (isTrailer.value) return;
         currentSubtitle(subtitle.data);
       } else if (subtitle == null && currentSubtitle.value.isNotEmpty) {
         currentSubtitle('');
@@ -3087,7 +3323,7 @@ class VideoPlayersController extends GetxController {
   //region Helper methods for Focus
 
   void toggleSkipNextFocus(bool value) {
-    if(!isSkipFocusPermission) return;
+    if (!isSkipFocusPermission) return;
     isSkipNextFocused(value);
     if (value) {
       skipNextVideoFocusNode.requestFocus();
@@ -3102,8 +3338,8 @@ class VideoPlayersController extends GetxController {
     showQualityOptions(value);
     if (value) {
       // When opening quality options, focus the currently selected quality
-      int selectedIndex =
-          videoQualities.indexWhere((quality) => quality.quality.toLowerCase() == currentQuality.value.toLowerCase());
+      int selectedIndex = videoQualities.indexWhere((quality) =>
+          quality.quality.toLowerCase() == currentQuality.value.toLowerCase());
 
       if (selectedIndex == -1) {
         selectedIndex = 0; // Default to first item if not found
@@ -3147,7 +3383,8 @@ class VideoPlayersController extends GetxController {
     showSubtitleOptions(value);
     if (value) {
       // When opening subtitle options, focus the currently selected subtitle
-      int selectedIndex = subtitleList.indexWhere((subtitle) => subtitle.id == selectedSubtitleModel.value.id);
+      int selectedIndex = subtitleList.indexWhere(
+          (subtitle) => subtitle.id == selectedSubtitleModel.value.id);
 
       if (selectedIndex == -1) {
         selectedIndex = 0; // Default to first item if not found
@@ -3194,7 +3431,8 @@ class VideoPlayersController extends GetxController {
         }
       }
 
-      if (isSkipIntroFocused.value && event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      if (isSkipIntroFocused.value &&
+          event.logicalKey == LogicalKeyboardKey.arrowLeft) {
         isSkipIntroFocused.value = false;
         skipIntroFocusNode.unfocus();
 
@@ -3204,7 +3442,8 @@ class VideoPlayersController extends GetxController {
       }
 
       if (isSkipIntroFocused.value &&
-          (event.logicalKey == LogicalKeyboardKey.enter || event.logicalKey == LogicalKeyboardKey.select)) {
+          (event.logicalKey == LogicalKeyboardKey.enter ||
+              event.logicalKey == LogicalKeyboardKey.select)) {
         onSkipIntro();
         isSkipIntroFocused.value = false;
         skipIntroFocusNode.unfocus();
@@ -3231,7 +3470,8 @@ class VideoPlayersController extends GetxController {
       return;
     }
 
-    if (event.logicalKey == LogicalKeyboardKey.enter || event.logicalKey == LogicalKeyboardKey.select) {
+    if (event.logicalKey == LogicalKeyboardKey.enter ||
+        event.logicalKey == LogicalKeyboardKey.select) {
       if (isProgressBarVisible.value || skipNextVideoFocusNode.hasFocus) {
         handleEnterKeyPress(event);
       } else {
@@ -3256,7 +3496,8 @@ class VideoPlayersController extends GetxController {
 
     // --- Handle Back Button ---
     if (event.logicalKey == LogicalKeyboardKey.goBack) {
-      if ((showQualityOptions.value || showSubtitleOptions.value) && isProgressBarVisible.value) {
+      if ((showQualityOptions.value || showSubtitleOptions.value) &&
+          isProgressBarVisible.value) {
         // Close open options
         toggleSubtitleOptions(false);
         toggleQualityOptions(false);
@@ -3273,14 +3514,16 @@ class VideoPlayersController extends GetxController {
     }
 
     // --- Quality & Subtitle Tabs Navigation ---
-    if (showQualityOptions.value && event.logicalKey == LogicalKeyboardKey.arrowRight) {
+    if (showQualityOptions.value &&
+        event.logicalKey == LogicalKeyboardKey.arrowRight) {
       toggleQualityOptions(false);
       toggleQualityFocus(false);
       toggleSubtitleFocus(true);
       return;
     }
 
-    if (showSubtitleOptions.value && event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+    if (showSubtitleOptions.value &&
+        event.logicalKey == LogicalKeyboardKey.arrowLeft) {
       toggleSubtitleOptions(false);
       toggleSubtitleFocus(false);
       toggleQualityFocus(true);
@@ -3341,7 +3584,9 @@ class VideoPlayersController extends GetxController {
       handleMainFocusNavigation(event);
       return;
     } else {
-      if (isQualityFocused.value && showQualityOptions.value && focusedQualityIndex.value > -1) {
+      if (isQualityFocused.value &&
+          showQualityOptions.value &&
+          focusedQualityIndex.value > -1) {
         // Quality item is focused, select it
         onQualitySelected(focusedQualityIndex.value);
         return;
@@ -3365,7 +3610,11 @@ class VideoPlayersController extends GetxController {
     if (trailer) {
       focusOrder = [skipNextVideoFocusNode];
     } else if (nextEpisode) {
-      focusOrder = [qualityTabFocusNode, subtitleTabFocusNode, skipNextVideoFocusNode];
+      focusOrder = [
+        qualityTabFocusNode,
+        subtitleTabFocusNode,
+        skipNextVideoFocusNode
+      ];
     } else {
       focusOrder = [qualityTabFocusNode, subtitleTabFocusNode];
     }
@@ -3373,7 +3622,8 @@ class VideoPlayersController extends GetxController {
     int currentIndex = focusOrder.indexWhere((node) => node.hasFocus);
 
     // ENTER key: Trigger tab focus actions
-    if (event.logicalKey == LogicalKeyboardKey.enter || event.logicalKey == LogicalKeyboardKey.select) {
+    if (event.logicalKey == LogicalKeyboardKey.enter ||
+        event.logicalKey == LogicalKeyboardKey.select) {
       if (currentIndex == -1) return;
       FocusNode focusedNode = focusOrder[currentIndex];
 
@@ -3400,7 +3650,7 @@ class VideoPlayersController extends GetxController {
         showProgressBar();
       } else {
         if (trailer) {
-          if(!isSkipFocusPermission) return;
+          if (!isSkipFocusPermission) return;
           skipNextVideoFocusNode.requestFocus();
           updateFocusFlags(skipNextVideoFocusNode);
         } else {
@@ -3433,7 +3683,8 @@ class VideoPlayersController extends GetxController {
 
     // Check if enough time has passed since last navigation
     final now = DateTime.now();
-    if (_lastQualityNavigationTime != null && now.difference(_lastQualityNavigationTime!) < _navigationDebounceTime) {
+    if (_lastQualityNavigationTime != null &&
+        now.difference(_lastQualityNavigationTime!) < _navigationDebounceTime) {
       log("Quality Navigation debounced - too soon since last navigation");
       return;
     }
@@ -3478,7 +3729,9 @@ class VideoPlayersController extends GetxController {
 
     // Check if enough time has passed since last navigation
     final now = DateTime.now();
-    if (_lastSubtitleNavigationTime != null && now.difference(_lastSubtitleNavigationTime!) < _navigationDebounceTime) {
+    if (_lastSubtitleNavigationTime != null &&
+        now.difference(_lastSubtitleNavigationTime!) <
+            _navigationDebounceTime) {
       log("Subtitle Navigation debounced - too soon since last navigation");
       return;
     }
@@ -3523,7 +3776,8 @@ class VideoPlayersController extends GetxController {
     final selected = videoQualities[index];
     currentQuality(selected.quality);
     // Always call changeVideo to actually switch the video quality
-    changeVideo(quality: selected.quality, isQuality: true, type: selected.urlType);
+    changeVideo(
+        quality: selected.quality, isQuality: true, type: selected.urlType);
     requestVideoFocus();
     isProgressBarVisible(false);
     toggleSkipNextFocus(false);
@@ -3583,18 +3837,24 @@ class VideoPlayersController extends GetxController {
 
       String watchedTime = '';
       String totalWatchedTime = '';
-      if (videoModel.value.videoUploadType.toLowerCase() == PlayerTypes.youtube) {
-        if (youtubePlayerController.value.value.hasPlayed && !isBuffering.value) {
-          watchedTime = formatDuration(youtubePlayerController.value.value.position);
-          totalWatchedTime = formatDuration(youtubePlayerController.value.metadata.duration);
+      if (videoModel.value.videoUploadType.toLowerCase() ==
+          PlayerTypes.youtube) {
+        if (youtubePlayerController.value.value.hasPlayed &&
+            !isBuffering.value) {
+          watchedTime =
+              formatDuration(youtubePlayerController.value.value.position);
+          totalWatchedTime =
+              formatDuration(youtubePlayerController.value.metadata.duration);
         }
       } else {
         if (podPlayerController.value.videoPlayerValue != null &&
             podPlayerController.value.isVideoPlaying &&
             !isBuffering.value &&
             !isResumingFromAd.value) {
-          watchedTime = formatDuration(podPlayerController.value.videoPlayerValue!.position);
-          totalWatchedTime = formatDuration(podPlayerController.value.videoPlayerValue!.duration);
+          watchedTime = formatDuration(
+              podPlayerController.value.videoPlayerValue!.position);
+          totalWatchedTime = formatDuration(
+              podPlayerController.value.videoPlayerValue!.duration);
         }
       }
 
@@ -3605,22 +3865,30 @@ class VideoPlayersController extends GetxController {
 
       await CoreServiceApis.saveContinueWatch(
         request: {
-          "entertainment_id":
-              videoModel.value.watchedTime.isNotEmpty ? videoModel.value.entertainmentId : videoModel.value.id,
+          "entertainment_id": videoModel.value.watchedTime.isNotEmpty
+              ? videoModel.value.entertainmentId
+              : videoModel.value.id,
           "watched_time": watchedTime,
 
           ///store actual value of video player there is chance duration might be set different then actual duration of video
           "total_watched_time": totalWatchedTime,
-          "entertainment_type": getTypeForContinueWatch(type: videoModel.value.type.toLowerCase()),
+          "entertainment_type": getTypeForContinueWatch(
+              type: videoModel.value.type.toLowerCase()),
           if (profileId.value != 0) "profile_id": profileId.value,
-          if (getTypeForContinueWatch(type: videoModel.value.type.toLowerCase()) == VideoType.tvshow)
-            "episode_id": videoModel.value.episodeId > 0 ? videoModel.value.episodeId : videoModel.value.id,
+          if (getTypeForContinueWatch(
+                  type: videoModel.value.type.toLowerCase()) ==
+              VideoType.tvshow)
+            "episode_id": videoModel.value.episodeId > 0
+                ? videoModel.value.episodeId
+                : videoModel.value.id,
         },
       ).then((value) {
         HomeController homeScreenController = Get.find<HomeController>();
         homeScreenController.getDashboardDetail(showLoader: false);
         ProfileController profileController =
-            Get.isRegistered<ProfileController>() ? Get.find<ProfileController>() : Get.put(ProfileController());
+            Get.isRegistered<ProfileController>()
+                ? Get.find<ProfileController>()
+                : Get.put(ProfileController());
 
         profileController.getProfileDetail(showLoader: false);
       }).catchError((e) {
@@ -3692,7 +3960,7 @@ class VideoPlayersController extends GetxController {
     try {
       youtubePlayerController.value.dispose();
       podPlayerController.value.dispose();
-    } catch(e) {
+    } catch (e) {
       log("Error Disposing Controller: $e");
     }
   }
@@ -3743,7 +4011,8 @@ extension ContentModelAdapter on ContentModel {
   String get introStartsAt => details.introStartsAt;
   String get introEndsAt => details.introEndsAt;
 
-  String get trailerUrlType => trailerData.isNotEmpty ? trailerData.first.urlType : '';
+  String get trailerUrlType =>
+      trailerData.isNotEmpty ? trailerData.first.urlType : '';
   String get trailerUrl => trailerData.isNotEmpty ? trailerData.first.url : '';
 
   // Choose the best available stream from qualities

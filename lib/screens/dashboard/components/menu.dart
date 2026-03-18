@@ -10,6 +10,8 @@ enum BottomItem {
   comingsoon,
   livetv,
   profile,
+  matches,
+  shorts,
 }
 
 class BottomBarItem {

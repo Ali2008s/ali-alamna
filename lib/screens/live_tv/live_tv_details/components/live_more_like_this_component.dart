@@ -34,12 +34,10 @@ class LiveMoreListComponent extends StatelessWidget {
               ChannelModel showDet = moreList[index];
               return InkWell(
                 onTap: () async {
-                  doIfLogin(onLoggedIn: () async {
-                    LiveStream().emit(podPlayerPauseKey);
-                    Get.back();
-                    await Future.delayed(Duration(milliseconds: 340));
-                    Get.to(() => LiveShowDetailsScreen(), arguments: showDet, preventDuplicates: false);
-                  });
+                  LiveStream().emit(podPlayerPauseKey);
+                  Get.back();
+                  await Future.delayed(Duration(milliseconds: 340));
+                  Get.to(() => LiveShowDetailsScreen(), arguments: showDet, preventDuplicates: false);
                 },
                 child: LiveShowCardComponent(
                   height: 100,

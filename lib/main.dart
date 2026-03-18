@@ -37,6 +37,8 @@ import 'utils/colors.dart';
 import 'utils/common_base.dart';
 import 'utils/constants.dart';
 import 'utils/local_storage.dart' as local;
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_web/webview_flutter_web.dart';
 import 'utils/push_notification_service.dart';
 
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -180,7 +182,9 @@ void main() async {
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
-  if (!kIsWeb) {
+  if (kIsWeb) {
+    WebViewPlatform.instance = WebWebViewPlatform();
+  } else {
     HttpOverrides.global = MyHttpOverrides();
   }
   runApp(const MyApp());

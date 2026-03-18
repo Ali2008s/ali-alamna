@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:nb_utils/nb_utils.dart';
 import 'package:streamit_laravel/generated/assets.dart';
 import 'package:streamit_laravel/main.dart';
 import 'package:streamit_laravel/screens/content/model/content_model.dart';
 import 'package:streamit_laravel/utils/colors.dart';
-import 'package:streamit_laravel/utils/common_base.dart';
 import 'package:streamit_laravel/utils/constants.dart';
 import 'package:streamit_laravel/utils/extension/string_extension.dart';
 
@@ -24,23 +22,25 @@ class SliderBannerContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isSportsNews = data.details.type == 'video' && data.details.id == 0;
+
     return Stack(
       children: [
-        Positioned(
-          left: 0,
-          top: 0,
-          bottom: 0,
-          right: 0,
+        // ─── Full-size background image ──────────────────────────────────
+        Positioned.fill(
           child: Stack(
             fit: StackFit.expand,
             children: [
-              CachedImageWidget(  
-                url: data.posterImage,
-                width: 1024,
-                fit: BoxFit.cover,
-                height: Get.height * 0.5,
-                alignment: Alignment.centerRight,
-              ).onTap(onPosterTap),
+              GestureDetector(
+                onTap: onPosterTap,
+                child: CachedImageWidget(
+                  url: data.posterImage,
+                  width: Get.width,
+                  fit: BoxFit.cover,
+                  height: Get.height * 0.62,
+                  alignment: Alignment.center,
+                ),
+              ),
               if (showTrailer)
                 Positioned.fill(
                   child: TrailerPlayerWidget(
@@ -63,6 +63,31 @@ class SliderBannerContent extends StatelessWidget {
             ],
           ),
         ),
+
+        // ─── Gradient overlay (bottom) ────────────────────────────────────
+        IgnorePointer(
+          ignoring: true,
+          child: Container(
+            height: Get.height * 0.62,
+            width: Get.width,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.transparent,
+                  Colors.black.withOpacity(0.4),
+                  Colors.black.withOpacity(0.85),
+                  Colors.black.withOpacity(0.97),
+                ],
+                stops: const [0.0, 0.35, 0.55, 0.78, 1.0],
+              ),
+            ),
+          ),
+        ),
+
+        // ─── Side gradient (for readability) ─────────────────────────────
         IgnorePointer(
           ignoring: true,
           child: Container(
@@ -70,100 +95,137 @@ class SliderBannerContent extends StatelessWidget {
             width: Get.width,
             foregroundDecoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.black, Colors.black.withValues(alpha: 0.9), Colors.transparent],
+                colors: [Colors.black.withOpacity(0.85), Colors.transparent],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
-                stops: const [0.0, 0.05, 1],
+                stops: const [0.0, 0.55],
               ),
             ),
           ),
         ),
-        if (data.details.type == VideoType.liveTv) const Positioned(top: 14, left: 46, child: LiveCard()),
+
+        // ─── Live badge ───────────────────────────────────────────────────
+        if (data.details.type == VideoType.liveTv)
+          const Positioned(top: 14, left: 46, child: LiveCard()),
+
+        // ─── Content info (bottom-left) ───────────────────────────────────
         Positioned(
-          bottom: 8,
+          bottom: 16,
           left: 20,
-          right: Get.width * 0.5,
+          right: Get.width * 0.42,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              if (data.details.genres.isNotEmpty)
-                Marquee(
-                  child: Text(data.details.genres.join(' • '), style: commonSecondaryTextStyle(size: 12)),
-                ),
-              if (data.details.genres.isNotEmpty) 8.height,
-              Text(
-                data.details.name,
-                style: commonW500PrimaryTextStyle(size: 28).copyWith(
-                  fontWeight: FontWeight.bold,
-                  shadows: [
-                    Shadow(color: Colors.black.withValues(alpha: 0.8), offset: const Offset(2, 2), blurRadius: 4),
-                  ],
-                ),
-              ),
-              12.height,  
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    if (data.details.releaseDate.isNotEmpty) Text(data.details.releaseDate.toString(), style: commonSecondaryTextStyle(size: 12)),
-                    if(data.details.type != VideoType.video)...[
-                      24.width,
-                      if (data.details.language.isNotEmpty) const CachedImageWidget(url: Assets.iconsIcTranslate, height: 14, width: 14, color: iconColor),
-                      6.width,
-                      if (data.details.language.isNotEmpty) Text(data.details.language.capitalizeFirst!.validate(), style: commonSecondaryTextStyle(size: 12)),
-                    ],
-                    if(data.details.type != VideoType.tvshow)...[
-                      24.width,
-                      if (data.details.duration.isNotEmpty) const CachedImageWidget(url: Assets.iconsIcClock, height: 12, width: 12),
-                      6.width,
-                      if (data.details.duration.isNotEmpty) Text(data.details.duration.validate(), style: commonSecondaryTextStyle(size: 12)),
-                    ],
-                    24.width,
-                    if (data.details.imdbRating != "") const CachedImageWidget(url: Assets.iconsIcStar, height: 10, width: 10),
-                    6.width,
-                    if (data.details.imdbRating != "") Text("${data.details.imdbRating} ${locale.value.iMDB}", style: commonSecondaryTextStyle(size: 12)),
-                  ],
-                ),
-              ),
-              if (data.details.description.isNotEmpty)
-              16.height,
+              // Sports news badge
+              if (isSportsNews)
                 Container(
-                  width: Get.width * 0.45,
-                  padding: const EdgeInsets.only(right: 5),
-                  child: Text(
-                    data.details.description,
-                    style: commonSecondaryTextStyle(size: 14).copyWith(height: 1.4, color: Colors.white.withValues(alpha: 0.9)),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.2),
+                    border: Border.all(color: Colors.red.withOpacity(0.6)),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.sports_soccer, color: Colors.red, size: 12),
+                      SizedBox(width: 4),
+                      Text('أخبار رياضية', style: TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold)),
+                    ],
                   ),
                 ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  AppButton(
-                    height: 48,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                    color: appColorPrimary,
-                    shapeBorder: RoundedRectangleBorder(
-                      borderRadius: radius(6),
-                      side: hasFocus ? BorderSide(color: white, width: 3, strokeAlign: BorderSide.strokeAlignOutside) : BorderSide.none,
-                    ),
-                    enabled: true,
-                    onTap: onPosterTap,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const CachedImageWidget(url: Assets.iconsIcPlay, height: 14, width: 14),
-                        12.width,
-                        Text(locale.value.watchNow, style: appButtonTextStyleWhite.copyWith(fontSize: 16, fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                  )
-                ],
+
+              // Title
+              Text(
+                data.details.name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  height: 1.3,
+                  shadows: [Shadow(color: Colors.black87, offset: Offset(1, 1), blurRadius: 4)],
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
+              const SizedBox(height: 10),
+
+              // Description (for news articles) - no "watch" button
+              if (isSportsNews && data.details.description.isNotEmpty)
+                Text(
+                  data.details.description,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.85),
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                )
+              else ...[
+                // For non-news items: show metadata
+                if (data.details.genres.isNotEmpty)
+                  Text(
+                    data.details.genres.join(' • '),
+                    style: const TextStyle(color: Colors.white60, fontSize: 12),
+                  ),
+                const SizedBox(height: 6),
+                // Metadata row
+                Row(
+                  children: [
+                    if (data.details.releaseDate.isNotEmpty)
+                      Text(data.details.releaseDate, style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                    if (data.details.releaseDate.isNotEmpty && data.details.duration.isNotEmpty)
+                      const Text(' • ', style: TextStyle(color: Colors.white30, fontSize: 12)),
+                    if (data.details.duration.isNotEmpty)
+                      Text(data.details.duration, style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Watch button only for non-news items
+                if (!isSportsNews)
+                  GestureDetector(
+                    onTap: onPosterTap,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: hasFocus ? Colors.white : appColorPrimary,
+                        borderRadius: BorderRadius.circular(8),
+                        border: hasFocus ? Border.all(color: Colors.white, width: 2) : null,
+                        boxShadow: [
+                          BoxShadow(
+                            color: appColorPrimary.withOpacity(0.4),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CachedImageWidget(
+                            url: Assets.iconsIcPlay,
+                            height: 14,
+                            width: 14,
+                            color: hasFocus ? appColorPrimary : Colors.white,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            locale.value.watchNow,
+                            style: TextStyle(
+                              color: hasFocus ? appColorPrimary : Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
             ],
           ),
         ),
@@ -171,3 +233,4 @@ class SliderBannerContent extends StatelessWidget {
     );
   }
 }
+

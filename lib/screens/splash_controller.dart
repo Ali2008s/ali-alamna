@@ -95,10 +95,8 @@ class SplashScreenController extends GetxController {
       });
     } else if (deepLink.split("/")[2] == locale.value.liveTv) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        doIfLogin(onLoggedIn: () {
-          Get.offAll(() => LiveShowDetailsScreen(),
-              arguments: ChannelModel(id: int.parse(deepLink.split("/").last)));
-        });
+        Get.offAll(() => LiveShowDetailsScreen(),
+            arguments: ChannelModel(id: int.parse(deepLink.split("/").last)));
       });
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {

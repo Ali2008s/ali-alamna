@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -6,15 +7,13 @@ import 'package:nb_utils/nb_utils.dart';
 import 'package:streamit_laravel/screens/content/model/content_model.dart';
 import 'package:streamit_laravel/screens/home/model/dashboard_res_model.dart';
 import 'package:streamit_laravel/screens/slider/slider_controller.dart';
-import 'package:streamit_laravel/screens/watch_list/model/watch_list_resp.dart';
-import 'package:streamit_laravel/services/local_storage_service.dart';
 import 'package:streamit_laravel/utils/constants.dart';
 
 import '../../main.dart';
 import '../../network/auth_apis.dart';
-import '../../network/core_api.dart';
 import '../../utils/app_common.dart';
-import '../../utils/common_base.dart';
+import '../../screens/home/firebase/firebase_api.dart';
+import 'package:http/http.dart' as http;
 
 class HomeController extends GetxController {
   /// Declarations
@@ -151,11 +150,11 @@ class HomeController extends GetxController {
   /// Init Function
   Future<void> init({bool forceSync = false, bool showLoader = false, bool forceConfigSync = false}) async {
     isLastPage(false);
+    cachedDashboardDetailResponse = null; // Clear old cache to avoid showing movies
     getAppConfigurations(forceConfigSync);
-    sliderController.getBanner(type: BannerType.home);
 
     checkApiCallIsWithinTimeSpan(
-      forceSync: forceSync,
+      forceSync: true, // Force to ensure news/channels load
       callback: () {
         getDashboardDetail(showLoader: showLoader);
       },
@@ -170,384 +169,136 @@ class HomeController extends GetxController {
     }
   }
 
-  ///Get Dashboard List
   Future<void> getDashboardDetail({bool showLoader = false}) async {
     showCategoryShimmer(showLoader);
     dashboardSectionList.clear();
 
-    await dashboardDetailsFuture(CoreServiceApis.getDashboard()).then((value) async {
-      value.data.continueWatch.validate().removeWhere((continueWatchData) {
-        return calculatePendingPercentage(
-              continueWatchData.details.duration.isEmpty || continueWatchData.details.duration == "00:00:00" ? "00:00:01" : continueWatchData.details.duration,
-              continueWatchData.details.watchedDuration.isEmpty || continueWatchData.details.watchedDuration == "00:00:00" ? "00:00:01" : continueWatchData.details.watchedDuration,
-            ).$1 ==
-            1;
-      });
+    // Clear slider to get rid of movies immediately
+    sliderController.listContent.clear();
 
-      cachedDashboardDetailResponse = value;
-      setValue(SharedPreferenceConst.DASHBOARD_DETAIL_LAST_CALL_TIME, DateTime.timestamp().millisecondsSinceEpoch);
-      await createCategorySections(value.data);
-      await getOtherDashboardDetails(showLoader: false);
-    }).whenComplete(
-      () {
-        showCategoryShimmer(false);
-      },
-    ).catchError((e) {
+    try {
+      await fetchNewsForSlider();
+
+      List<CategoryListModel> firebaseSections = await FirebaseChannelApi.getFirebaseChannels();
+      if (firebaseSections.isNotEmpty) {
+        dashboardSectionList.addAll(firebaseSections);
+      }
+      
+      // Update the main future to trigger SnapHelperWidget onSuccess
+      dashboardDetailsFuture.value = Future.value(DashboardDetailResponse(
+        status: true,
+        data: DashboardModel(isEnableBanner: true),
+      ));
+    } catch (e) {
+       log('getDashboardDetail error: $e');
+       dashboardDetailsFuture.value = Future.error(e.toString());
+    } finally {
       showCategoryShimmer(false);
-    });
+    }
+  }
+
+  Future<void> fetchNewsForSlider() async {
+    bool success = false;
+    // Try multiple sports RSS feeds
+    final List<String> sportsFeedUrls = [
+      'https://api.rss2json.com/v1/api.json?rss_url=https://www.skysports.com/rss/0,20514,11661,00.xml',
+      'https://api.rss2json.com/v1/api.json?rss_url=http://feeds.bbci.co.uk/sport/rss.xml',
+      'https://api.rss2json.com/v1/api.json?rss_url=https://www.goal.com/feeds/ar/news',
+      'https://api.rss2json.com/v1/api.json?rss_url=http://feeds.bbci.co.uk/arabic/rss.xml',
+    ];
+
+    for (final feedUrl in sportsFeedUrls) {
+      if (success) break;
+      try {
+        final response = await http.get(Uri.parse(feedUrl)).timeout(const Duration(seconds: 8));
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final items = data['items'] as List;
+          List<PosterDataModel> news = [];
+          for (var item in items) {
+            final title = item['title'] ?? '';
+            final imageUrl = item['thumbnail'] ?? item['enclosure']?['link'] ?? '';
+            if (title.isEmpty) continue;
+
+            final contentModel = ContentData(
+              id: 0,
+              name: title,
+              thumbnailImage: imageUrl,
+              type: 'video',
+              description: item['description']?.replaceAll(RegExp(r'<[^>]*>'), '') ?? title,
+            );
+            news.add(PosterDataModel(details: contentModel, posterImage: imageUrl));
+          }
+          if (news.isNotEmpty) {
+            sliderController.listContent.assignAll(news);
+            sliderController.currentSliderPage(news.first);
+            currentSliderPage(news.first);
+            success = true;
+            break;
+          }
+        }
+      } catch (e) {
+        log('RSS feed error ($feedUrl): $e');
+      }
+    }
+
+    if (!success) {
+      // Sports fallback items
+      final List<Map<String, String>> fallbackItems = [
+        {
+          'title': '⚽ أحدث أخبار كرة القدم',
+          'image': 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=1200',
+          'desc': 'تابع آخر أخبار دوريات العالم والمباريات المباشرة',
+        },
+        {
+          'title': '🏆 دوري أبطال أوروبا',
+          'image': 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1200',
+          'desc': 'نتائج وتحليلات دوري أبطال أوروبا',
+        },
+        {
+          'title': '🔴 المباريات المباشرة',
+          'image': 'https://images.unsplash.com/photo-1540655037529-dec987208707?w=1200',
+          'desc': 'شاهد المباريات المباشرة الآن',
+        },
+      ];
+
+      final fallbackNews = fallbackItems.map((item) {
+        final contentModel = ContentData(
+          id: 0,
+          name: item['title']!,
+          thumbnailImage: item['image']!,
+          type: 'video',
+          description: item['desc']!,
+        );
+        return PosterDataModel(details: contentModel, posterImage: item['image']!);
+      }).toList();
+
+      sliderController.listContent.assignAll(fallbackNews);
+      sliderController.currentSliderPage(sliderController.listContent.first);
+      currentSliderPage(sliderController.listContent.first);
+    }
   }
 
   /// GET Other Dashboard Data Details
   Future<void> getOtherDashboardDetails({bool showLoader = false}) async {
-    showCategoryShimmer(showLoader);
-    await dashboardOtherDetailsFuture(CoreServiceApis.getDashboardDetailOtherData()).then((value) async {
-      isLastPage(true);
-      await createCategorySections(value.data, isFirstPage: false);
-      showCategoryShimmer(false);
-      final DashboardDetailResponse? oldData = cachedDashboardDetailResponse;
-      cachedDashboardDetailResponse = value;
-      if (oldData != null) {
-        cachedDashboardDetailResponse!.data.continueWatch = oldData.data.continueWatch;
-        cachedDashboardDetailResponse!.data.top10List = oldData.data.top10List;
-        cachedDashboardDetailResponse!.data.latestList = oldData.data.latestList;
-        cachedDashboardDetailResponse!.data.likeMovieList = oldData.data.likeMovieList;
-        cachedDashboardDetailResponse!.data.viewedMovieList = oldData.data.viewedMovieList;
-        cachedDashboardDetailResponse!.data.basedOnLastWatchMovieList = oldData.data.basedOnLastWatchMovieList;
-      }
-
-      setValue(SharedPreferenceConst.CACHE_DASHBOARD, cachedDashboardDetailResponse!.toJson());
-    }).catchError((e) {
-      showCategoryShimmer(false);
-    });
+    // Disabled logic for movies
   }
 
-  ///GET Category Sections Data
+  ///GET Category Sections Data (Disabled)
   Future<void> createCategorySections(DashboardModel dashboard, {bool isFirstPage = true}) async {
-    showCategoryShimmer(true);
-
-    final DashboardModel newDashboardData = removeNotEnableModuleSections(dashboard);
-
-    if (isFirstPage) {
-      createDashboardFirstSectionList(newDashboardData);
-      createDashboardOtherSectionList(newDashboardData);
-    } else {
-      createDashboardOtherSectionList(newDashboardData);
-    }
-
-    showCategoryShimmer(false);
+    // Disabled movies logic
   }
 
-  /// Remove Not Enable Module Sections
   DashboardModel removeNotEnableModuleSections(DashboardModel dashboard) {
-    if (!appConfigs.value.enableMovie) {
-      for (var list in [
-        dashboard.basedOnLastWatchMovieList,
-        dashboard.trendingInCountryMovieList,
-        dashboard.trendingMovieList,
-        dashboard.likeMovieList,
-        dashboard.viewedMovieList,
-        dashboard.payPerView,
-      ]) {
-        list.removeWhere((e) => e.details.type == VideoType.movie);
-      }
-    }
-
-    if (!appConfigs.value.enableTvShow) {
-      for (var list in [
-        dashboard.basedOnLastWatchMovieList,
-        dashboard.trendingInCountryMovieList,
-        dashboard.trendingMovieList,
-        dashboard.likeMovieList,
-        dashboard.viewedMovieList,
-        dashboard.payPerView,
-      ]) {
-        list.removeWhere((e) => e.details.type == VideoType.tvshow || e.details.type == VideoType.episode);
-      }
-    }
-
-    if (!appConfigs.value.enableVideo) {
-      for (var list in [
-        dashboard.basedOnLastWatchMovieList,
-        dashboard.trendingInCountryMovieList,
-        dashboard.trendingMovieList,
-        dashboard.likeMovieList,
-        dashboard.viewedMovieList,
-        dashboard.payPerView,
-      ]) {
-        list.removeWhere((e) => e.details.type == VideoType.video);
-      }
-    }
-
     return dashboard;
   }
 
-  /// Create Dashboard First Section List
   void createDashboardFirstSectionList(DashboardModel dashboard) {
-    if (appConfigs.value.enableContinueWatch && dashboard.continueWatch.isNotEmpty) {
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          name: locale.value.continueWatching,
-          sectionType: DashboardCategoryType.continueWatching,
-          data: dashboard.continueWatch,
-        ),
-        index: 0,
-      );
-    }
-
-    addOrReplaceSection(
-      targetList: dashboardSectionList,
-      newSection: CategoryListModel(
-        name: dashboard.top10List?.name ?? '',
-        sectionType: DashboardCategoryType.top10,
-        data: dashboard.top10List?.data ?? [],
-      ),
-      index: 1,
-    );
-
-    // 🎬 Latest Movies
-    if (appConfigs.value.enableMovie) {
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          name: locale.value.latestMovies,
-          sectionType: DashboardCategoryType.latestMovies,
-          data: dashboard.latestList?.data ?? [],
-          showViewAll: dashboard.latestList!.data.length > 8,
-        ),
-        index: 3,
-      );
-    }
-
-    // 💰 Pay Per View
-    addOrReplaceSection(
-      targetList: dashboardSectionList,
-      newSection: CategoryListModel(
-        name: locale.value.payPerView,
-        sectionType: DashboardCategoryType.payPerView,
-        data: dashboard.payPerView,
-        showViewAll: true
-      ),
-      index: 4,
-    );
-
-    // 🌐 Languages
-    addOrReplaceSection(
-      targetList: dashboardSectionList,
-      newSection: CategoryListModel(
-        name: dashboard.popularLanguageList?.name ?? locale.value.popularLanguages,
-        sectionType: DashboardCategoryType.language,
-        data: dashboard.popularLanguageList?.languageList ?? [],
-      ),
-      index: 5,
-    );
-
-    // 🎥 Popular Movies
-    if (appConfigs.value.enableMovie) {
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          name: dashboard.popularMovieList?.name ?? '',
-          sectionType: DashboardCategoryType.movie,
-          data: dashboard.popularMovieList?.data ?? [],
-          showViewAll: (dashboard.popularMovieList?.data ?? []).length > 9,
-        ),
-        index: 6,
-      );
-    }
+    // Disabled
   }
 
   Future<void> createDashboardOtherSectionList(DashboardModel dashboard) async {
-    // 📺 Live TV Channels
-    if (appConfigs.value.enableLiveTv) {
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          name: dashboard.topChannelList?.name ?? '',
-          sectionType: DashboardCategoryType.channels,
-          data: dashboard.topChannelList?.data ?? [],
-          showViewAll: true,
-        ),
-        index: 7,
-      );
-    }
-
-    // 📺 Popular TV Shows
-    if (appConfigs.value.enableTvShow) {
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          name: dashboard.popularTvShowList?.name ?? '',
-          sectionType: DashboardCategoryType.tvShow,
-          data: dashboard.popularTvShowList?.data ?? [],
-          showViewAll: dashboard.popularTvShowList!.data.length > 8,
-        ),
-        index: 8,
-      );
-    }
-
-    // 👩‍🎤 Personalities
-    addOrReplaceSection(
-      targetList: dashboardSectionList,
-      newSection: CategoryListModel(
-        name: dashboard.actorList?.name ?? '',
-        sectionType: DashboardCategoryType.personality,
-        data: dashboard.actorList?.data ?? [],
-        showViewAll: true,
-      ),
-      index: 9,
-    );
-
-    // 🆓 Free Movies
-    if (appConfigs.value.enableMovie) {
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          name: dashboard.freeMovieList?.name ?? '',
-          sectionType: DashboardCategoryType.movie,
-          data: dashboard.freeMovieList?.data ?? [],
-          showViewAll: true,
-        ),
-        index: 10,
-      );
-    }
-
-    // 🎭 Genres
-    addOrReplaceSection(
-      targetList: dashboardSectionList,
-      newSection: CategoryListModel(
-        name: locale.value.genres,
-        sectionType: DashboardCategoryType.genres,
-        data: dashboard.genreList?.data ?? [],
-        showViewAll: true,
-      ),
-      index: 11
-    );
-
-    // 📼 Popular Videos
-    if (appConfigs.value.enableVideo) {
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          name: locale.value.popularVideos,
-          sectionType: DashboardCategoryType.video,
-          data: dashboard.popularVideoList?.data ?? [],
-          showViewAll: true
-        ),
-        index: 12,
-      );
-    }
-
-    if (isLoggedIn.value) {
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          name: locale.value.basedOnYourPreviousWatch,
-          sectionType: DashboardCategoryType.personalised,
-          data: dashboard.basedOnLastWatchMovieList,
-        ),
-        index: 13,
-      );
-
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          name: locale.value.mostLiked,
-          sectionType: DashboardCategoryType.personalised,
-          data: dashboard.likeMovieList,
-          showViewAll: true,
-          isEachWordCapitalized: false,
-        ),
-        index: 14,
-      );
-
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          name: locale.value.mostViewed,
-          sectionType: DashboardCategoryType.personalised,
-          data: dashboard.viewedMovieList,
-        ),
-        index: 15,
-      );
-    }
-
-    // 🔥 Trending
-    await setJsonToLocal(
-      SharedPreferenceConst.POPULAR_MOVIE,
-      ListResponse(
-        data: dashboard.trendingMovieList,
-        name: locale.value.trendingMovies,
-      ).toJson(),
-    );
-
-    if (isLoggedIn.value) {
-      // Trending in your country
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          name: locale.value.trendingInYourCountry,
-          sectionType: DashboardCategoryType.personalised,
-          data: dashboard.trendingInCountryMovieList,
-          showViewAll: true,
-        ),
-        index: 16,
-      );
-
-      // Favorite genres
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          name: locale.value.favoriteGenres,
-          sectionType: DashboardCategoryType.genres,
-          data: dashboard.favGenreList,
-        ),
-        index: 17,
-      );
-
-      // Favorite personalities
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          name: locale.value.yourFavoritePersonalities,
-          sectionType: DashboardCategoryType.personality,
-          data: dashboard.favActorList,
-          showViewAll: false,
-        ),
-        index: 18,
-      );
-
-    }
-
-    dashboardSectionList.removeWhere((element) => element.isOtherSection);
-
-    for (final section in dashboard.otherSection) {
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        skipIfEmpty: true,
-        newSection: CategoryListModel(
-          name: section.name,
-          sectionType: 'other_section_${section.slug}',
-          data: section.data,
-          showViewAll: true,
-          isOtherSection: true,
-          slug: section.slug,
-          type: section.type,
-        ),
-        index: dashboardSectionList.length,
-      );
-    }
-
-    if (appConfigs.value.enableAds.getBoolInt()) {
-      addOrReplaceSection(
-        targetList: dashboardSectionList,
-        newSection: CategoryListModel(
-          sectionType: DashboardCategoryType.advertisement,
-          data: [],
-        ),
-        index: dashboardSectionList.length,
-      );
-    }
+    // Disabled
   }
   ///Add or Replace Section
   /// Replaces only if both sectionType AND name match (to allow multiple sections with same type but different names)

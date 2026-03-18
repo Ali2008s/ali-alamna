@@ -11,7 +11,8 @@ extension StrExt on String {
       return DateFormat(DateFormatConst.yyyy_MM_dd_HH_mm).parse(this);
     } catch (e) {
       try {
-        return DateFormat(DateFormatConst.yyyy_MM_dd_HH_mm).parse(DateTime.parse(this).toString());
+        return DateFormat(DateFormatConst.yyyy_MM_dd_HH_mm)
+            .parse(DateTime.parse(this).toString());
       } catch (e) {
         log('dateInyyyyMMddHHmmFormat Error in $this: $e');
         return DateTime.now();
@@ -21,7 +22,8 @@ extension StrExt on String {
 
   String get dateInddMMMyyyyHHmmAmPmFormat {
     try {
-      return DateFormat(DateFormatConst.dd_MMM_yyyy_HH_mm_a).format(dateInyyyyMMddHHmmFormat);
+      return DateFormat(DateFormatConst.dd_MMM_yyyy_HH_mm_a)
+          .format(dateInyyyyMMddHHmmFormat);
     } catch (e) {
       try {
         return "$dateInyyyyMMddHHmmFormat";
@@ -47,10 +49,13 @@ extension StrExt on String {
     if (trimWhitespaces) url = url.trim();
 
     for (var exp in [
-      RegExp(r"^https://(?:www\.|m\.)?youtube\.com/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
-      RegExp(r"^https://(?:www\.|m\.)?youtube(?:-nocookie)?\.com/embed/([_\-a-zA-Z0-9]{11}).*$"),
+      RegExp(
+          r"^https://(?:www\.|m\.)?youtube\.com/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
+      RegExp(
+          r"^https://(?:www\.|m\.)?youtube(?:-nocookie)?\.com/embed/([_\-a-zA-Z0-9]{11}).*$"),
       RegExp(r"^https://youtu\.be/([_\-a-zA-Z0-9]{11}).*$"),
-      RegExp(r"^https://(?:www\.)?youtube\.com/live/([_\-a-zA-Z0-9]{11})(?:\?.*)?$")
+      RegExp(
+          r"^https://(?:www\.)?youtube\.com/live/([_\-a-zA-Z0-9]{11})(?:\?.*)?$")
     ]) {
       Match? match = exp.firstMatch(url);
       if (match != null && match.groupCount >= 1) return match.group(1)!;
@@ -75,10 +80,13 @@ extension StrExt on String {
   bool get isYoutubeLink {
     if (isEmpty) return false;
     for (var exp in [
-      RegExp(r"^https://(?:www\.|m\.)?youtube\.com/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
-      RegExp(r"^https://(?:www\.|m\.)?youtube(?:-nocookie)?\.com/embed/([_\-a-zA-Z0-9]{11}).*$"),
+      RegExp(
+          r"^https://(?:www\.|m\.)?youtube\.com/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
+      RegExp(
+          r"^https://(?:www\.|m\.)?youtube(?:-nocookie)?\.com/embed/([_\-a-zA-Z0-9]{11}).*$"),
       RegExp(r"^https://youtu\.be/([_\-a-zA-Z0-9]{11}).*$"),
-      RegExp(r"^https://(?:www\.)?youtube\.com/live/([_\-a-zA-Z0-9]{11})(?:\?.*)?$")
+      RegExp(
+          r"^https://(?:www\.)?youtube\.com/live/([_\-a-zA-Z0-9]{11})(?:\?.*)?$")
     ]) {
       Match? match = exp.firstMatch(this);
       if (match != null && match.groupCount >= 1) return true;
@@ -87,7 +95,8 @@ extension StrExt on String {
   }
 
   bool isValidEmail() {
-    return RegExp(r'^[a-z0-9]+([\._]?[a-z0-9]+)*@[a-z0-9]+\.[a-z]{2,}$').hasMatch(this);
+    return RegExp(r'^[a-z0-9]+([\._]?[a-z0-9]+)*@[a-z0-9]+\.[a-z]{2,}$')
+        .hasMatch(this);
   }
 
   String getFilterType() {
@@ -104,7 +113,7 @@ extension StrExt on String {
     }
   }
 
- String getContentAccess({int requiredPlanLevel = 0}) {
+  String getContentAccess({int requiredPlanLevel = 0}) {
     if (this == MovieAccess.freeAccess || requiredPlanLevel == 0) {
       return MovieAccess.freeAccess;
     } else if (this == MovieAccess.paidAccess || requiredPlanLevel > 0) {

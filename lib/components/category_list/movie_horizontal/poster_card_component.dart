@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -102,11 +101,15 @@ class PosterCardComponent extends StatelessWidget {
   String get uniqueCategoryKey => categoryKey ?? 'unknown';
 
   PosterCardController get controller {
-    final String tag = 'poster_${contentDetail.id}_${index ?? 0}_$uniqueCategoryKey';
+    final String tag =
+        'poster_${contentDetail.id}_${index ?? 0}_$uniqueCategoryKey';
     return Get.isRegistered<PosterCardController>(tag: tag)
         ? Get.find<PosterCardController>(tag: tag)
         : Get.put(
-            PosterCardController(contentDetail: contentDetail, videoData: videoData, isPlayTrailer: isPlayTrailer),
+            PosterCardController(
+                contentDetail: contentDetail,
+                videoData: videoData,
+                isPlayTrailer: isPlayTrailer),
             tag: tag,
             permanent: true,
           );
@@ -118,25 +121,33 @@ class PosterCardComponent extends StatelessWidget {
       () {
         controller.hasFocus.value;
         return Focus(
-          key: ValueKey('focus_${contentDetail.id}_${index ?? 0}_$uniqueCategoryKey'),
+          key: ValueKey(
+              'focus_${contentDetail.id}_${index ?? 0}_$uniqueCategoryKey'),
           onKeyEvent: (node, event) {
-            if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+            if (event is KeyDownEvent &&
+                event.logicalKey == LogicalKeyboardKey.arrowLeft) {
               if (onArrowLeft != null) {
                 onArrowLeft!();
                 return KeyEventResult.handled;
               } else if ((index ?? -1) == 0) {
                 try {
-                  final DashboardController controller = Get.find<DashboardController>();
-                  controller.bottomNavItems[controller.selectedBottomNavIndex.value].focusNode.requestFocus();
+                  final DashboardController controller =
+                      Get.find<DashboardController>();
+                  controller
+                      .bottomNavItems[controller.selectedBottomNavIndex.value]
+                      .focusNode
+                      .requestFocus();
                 } catch (_) {}
                 return KeyEventResult.handled;
               }
             }
-            if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.arrowUp) {
+            if (event is KeyDownEvent &&
+                event.logicalKey == LogicalKeyboardKey.arrowUp) {
               onArrowUp?.call();
               return KeyEventResult.handled;
             }
-            if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.arrowRight) {
+            if (event is KeyDownEvent &&
+                event.logicalKey == LogicalKeyboardKey.arrowRight) {
               if (onArrowRight != null) {
                 onArrowRight!();
                 return KeyEventResult.handled;
@@ -145,7 +156,8 @@ class PosterCardComponent extends StatelessWidget {
                 return KeyEventResult.handled;
               }
             }
-            if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.arrowDown) {
+            if (event is KeyDownEvent &&
+                event.logicalKey == LogicalKeyboardKey.arrowDown) {
               if (onArrowDown != null) {
                 onArrowDown!();
                 return KeyEventResult.handled;
@@ -155,80 +167,89 @@ class PosterCardComponent extends StatelessWidget {
                 }
               }
             }
-            if ((event is KeyDownEvent || event is KeyUpEvent) && (event.logicalKey == LogicalKeyboardKey.select || event.logicalKey == LogicalKeyboardKey.enter)) {
+            if ((event is KeyDownEvent || event is KeyUpEvent) &&
+                (event.logicalKey == LogicalKeyboardKey.select ||
+                    event.logicalKey == LogicalKeyboardKey.enter)) {
               if (isLoading) return KeyEventResult.handled;
               saveSearchResults?.call();
-              final isFreeContent = contentDetail.details.access.toString() == MovieAccess.freeAccess;
+
+              if (isTopChannel) {
+                Get.to(
+                  () => LiveShowDetailsScreen(),
+                  arguments: ChannelModel(
+                    id: contentDetail.id,
+                    name: contentDetail.details.name,
+                    serverUrl: contentDetail.details.trailerUrl ?? videoData?.url ?? '',
+                    streamType: contentDetail.details.trailerUrlType ?? videoData?.urlType ?? '',
+                    requiredPlanLevel: contentDetail.details.requiredPlanLevel,
+                  ),
+                );
+                return KeyEventResult.handled;
+              }
+
+              final isFreeContent = contentDetail.details.access.toString() ==
+                  MovieAccess.freeAccess;
               if (isFreeContent) {
-                 if (contentDetail.details.releaseDate.isNotEmpty &&
+                if (contentDetail.details.releaseDate.isNotEmpty &&
+                    isComingSoon(contentDetail.details.releaseDate)) {
+                  ComingSoonController comingSoonCont =
+                      Get.put(ComingSoonController());
+                  Get.to(
+                    () => ComingSoonDetailScreen(
+                      comingSoonCont: comingSoonCont,
+                      comingSoonData: ComingSoonModel.fromJson(
+                          contentDetail.details.toListJson()),
+                    ),
+                  );
+                } else {
+                  if (contentDetail.details.type == VideoType.movie) {
+                    Get.to(() => ContentDetailsScreen(),
+                        arguments: contentDetail);
+                  } else if (contentDetail.details.type == VideoType.tvshow ||
+                      contentDetail.details.type == VideoType.episode) {
+                    Get.to(() => TVShowPreviewScreen(),
+                        arguments: contentDetail);
+                  } else if (contentDetail.details.type == VideoType.video) {
+                    Get.to(() => ContentDetailsScreen(),
+                        arguments: contentDetail);
+                  }
+                }
+              } else {
+                doIfLogin(onLoggedIn: () {
+                  if ((contentDetail.details.access.toString() ==
+                              MovieAccess.paidAccess &&
+                          isMoviePaid(
+                              requiredPlanLevel:
+                                  contentDetail.details.requiredPlanLevel)) ||
+                      !contentDetail.details.isDeviceSupported.getBoolInt()) {
+                    showSubscriptionDialog(
+                        title: locale.value.subscriptionRequired,
+                        msg: locale.value.pleaseSubscribeOrUpgrade);
+                  } else {
+                    if (contentDetail.details.releaseDate.isNotEmpty &&
                         isComingSoon(contentDetail.details.releaseDate)) {
-                      ComingSoonController comingSoonCont = Get.put(ComingSoonController());
+                      ComingSoonController comingSoonCont =
+                          Get.put(ComingSoonController());
                       Get.to(
                         () => ComingSoonDetailScreen(
                           comingSoonCont: comingSoonCont,
-                          comingSoonData: ComingSoonModel.fromJson(contentDetail.details.toListJson()),
-                        ),
-                      );
-                 } else {
-                    if (isTopChannel) {
-                      Get.to(
-                        () => LiveShowDetailsScreen(),
-                        arguments: ChannelModel(
-                          id: contentDetail.id,
-                          name: contentDetail.details.name,
-                          serverUrl: videoData?.url ?? '',
-                          streamType: videoData?.urlType ?? '',
-                          requiredPlanLevel: contentDetail.details.requiredPlanLevel,
+                          comingSoonData: ComingSoonModel.fromJson(
+                              contentDetail.details.toListJson()),
                         ),
                       );
                     } else {
                       if (contentDetail.details.type == VideoType.movie) {
-                        Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
-                      } else if (contentDetail.details.type == VideoType.tvshow ||
+                        Get.to(() => ContentDetailsScreen(),
+                            arguments: contentDetail);
+                      } else if (contentDetail.details.type ==
+                              VideoType.tvshow ||
                           contentDetail.details.type == VideoType.episode) {
-                        Get.to(() => TVShowPreviewScreen(), arguments: contentDetail);
-                      } else if (contentDetail.details.type == VideoType.video) {
-                        Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
-                      }
-                    }
-                 }
-              } else {
-                doIfLogin(onLoggedIn: () {
-                  if ((contentDetail.details.access.toString() == MovieAccess.paidAccess &&
-                      isMoviePaid(requiredPlanLevel: contentDetail.details.requiredPlanLevel)) || !contentDetail.details.isDeviceSupported.getBoolInt()) {
-                    showSubscriptionDialog(
-                        title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
-                  } else {
-                    if (contentDetail.details.releaseDate.isNotEmpty &&
-                        isComingSoon(contentDetail.details.releaseDate)) {
-                      ComingSoonController comingSoonCont = Get.put(ComingSoonController());
-                      Get.to(
-                        () => ComingSoonDetailScreen(
-                          comingSoonCont: comingSoonCont,
-                          comingSoonData: ComingSoonModel.fromJson(contentDetail.details.toListJson()),
-                        ),
-                      );
-                    } else {
-                      if (isTopChannel) {
-                        Get.to(
-                          () => LiveShowDetailsScreen(),
-                          arguments: ChannelModel(
-                            id: contentDetail.id,
-                            name: contentDetail.details.name,
-                            serverUrl: videoData?.url ?? '',
-                            streamType: videoData?.urlType ?? '',
-                            requiredPlanLevel: contentDetail.details.requiredPlanLevel,
-                          ),
-                        );
-                      } else {
-                        if (contentDetail.details.type == VideoType.movie) {
-                          Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
-                        } else if (contentDetail.details.type == VideoType.tvshow ||
-                            contentDetail.details.type == VideoType.episode) {
-                          Get.to(() => TVShowPreviewScreen(), arguments: contentDetail);
-                        } else if (contentDetail.details.type == VideoType.video) {
-                          Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
-                        }
+                        Get.to(() => TVShowPreviewScreen(),
+                            arguments: contentDetail);
+                      } else if (contentDetail.details.type ==
+                          VideoType.video) {
+                        Get.to(() => ContentDetailsScreen(),
+                            arguments: contentDetail);
                       }
                     }
                   }
@@ -247,7 +268,8 @@ class PosterCardComponent extends StatelessWidget {
                 context,
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
-                alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+                alignmentPolicy:
+                    ScrollPositionAlignmentPolicy.keepVisibleAtStart,
               );
               onFocusChange?.call(value);
               controller.setFocus(value);
@@ -257,77 +279,89 @@ class PosterCardComponent extends StatelessWidget {
                 () {
                   if (isLoading) return;
                   saveSearchResults?.call();
-                  final isFreeContent = contentDetail.details.access.toString() == MovieAccess.freeAccess;
+
+                  if (isTopChannel) {
+                    Get.to(
+                      () => LiveShowDetailsScreen(),
+                      arguments: ChannelModel(
+                        id: contentDetail.id,
+                        name: contentDetail.details.name,
+                        serverUrl: contentDetail.details.trailerUrl ?? videoData?.url ?? '',
+                        streamType: contentDetail.details.trailerUrlType ?? videoData?.urlType ?? '',
+                        requiredPlanLevel: contentDetail.details.requiredPlanLevel,
+                      ),
+                    );
+                    return;
+                  }
+
+                  final isFreeContent =
+                      contentDetail.details.access.toString() ==
+                          MovieAccess.freeAccess;
                   if (isFreeContent) {
                     if (contentDetail.details.releaseDate.isNotEmpty &&
-                            isComingSoon(contentDetail.details.releaseDate)) {
-                          ComingSoonController comingSoonCont = Get.put(ComingSoonController());
-                          Get.to(
-                            () => ComingSoonDetailScreen(
-                              comingSoonCont: comingSoonCont,
-                              comingSoonData: ComingSoonModel.fromJson(contentDetail.details.toListJson()),
-                            ),
-                          );
+                        isComingSoon(contentDetail.details.releaseDate)) {
+                      ComingSoonController comingSoonCont =
+                          Get.put(ComingSoonController());
+                      Get.to(
+                        () => ComingSoonDetailScreen(
+                          comingSoonCont: comingSoonCont,
+                          comingSoonData: ComingSoonModel.fromJson(
+                              contentDetail.details.toListJson()),
+                        ),
+                      );
                     } else {
-                      if (isTopChannel) {
-                        Get.to(
-                          () => LiveShowDetailsScreen(),
-                          arguments: ChannelModel(
-                            id: contentDetail.id,
-                            name: contentDetail.details.name,
-                            serverUrl: videoData?.url ?? '',
-                            streamType: videoData?.urlType ?? '',
-                            requiredPlanLevel: contentDetail.details.requiredPlanLevel,
-                          ),
-                        );
-                      } else {
-                        if (contentDetail.details.type == VideoType.movie) {
-                          Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
-                        } else if (contentDetail.details.type == VideoType.tvshow ||
-                            contentDetail.details.type == VideoType.episode) {
-                          Get.to(() => TVShowPreviewScreen(), arguments: contentDetail);
-                        } else if (contentDetail.details.type == VideoType.video) {
-                          Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
-                        }
+                      if (contentDetail.details.type == VideoType.movie) {
+                        Get.to(() => ContentDetailsScreen(),
+                            arguments: contentDetail);
+                      } else if (contentDetail.details.type ==
+                              VideoType.tvshow ||
+                          contentDetail.details.type == VideoType.episode) {
+                        Get.to(() => TVShowPreviewScreen(),
+                            arguments: contentDetail);
+                      } else if (contentDetail.details.type ==
+                          VideoType.video) {
+                        Get.to(() => ContentDetailsScreen(),
+                            arguments: contentDetail);
                       }
                     }
                   } else {
                     doIfLogin(onLoggedIn: () {
-                      if ((contentDetail.details.access.toString() == MovieAccess.paidAccess &&
-                          isMoviePaid(requiredPlanLevel: contentDetail.details.requiredPlanLevel)) || !contentDetail.details.isDeviceSupported.getBoolInt()) {
+                      if ((contentDetail.details.access.toString() ==
+                                  MovieAccess.paidAccess &&
+                              isMoviePaid(
+                                  requiredPlanLevel: contentDetail
+                                      .details.requiredPlanLevel)) ||
+                          !contentDetail.details.isDeviceSupported
+                              .getBoolInt()) {
                         showSubscriptionDialog(
-                            title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
+                            title: locale.value.subscriptionRequired,
+                            msg: locale.value.pleaseSubscribeOrUpgrade);
                       } else {
                         if (contentDetail.details.releaseDate.isNotEmpty &&
                             isComingSoon(contentDetail.details.releaseDate)) {
-                          ComingSoonController comingSoonCont = Get.put(ComingSoonController());
+                          ComingSoonController comingSoonCont =
+                              Get.put(ComingSoonController());
                           Get.to(
                             () => ComingSoonDetailScreen(
                               comingSoonCont: comingSoonCont,
-                              comingSoonData: ComingSoonModel.fromJson(contentDetail.details.toListJson()),
+                              comingSoonData: ComingSoonModel.fromJson(
+                                  contentDetail.details.toListJson()),
                             ),
                           );
                         } else {
-                          if (isTopChannel) {
-                            Get.to(
-                              () => LiveShowDetailsScreen(),
-                              arguments: ChannelModel(
-                                id: contentDetail.id,
-                                name: contentDetail.details.name,
-                                serverUrl: videoData?.url ?? '',
-                                streamType: videoData?.urlType ?? '',
-                                requiredPlanLevel: contentDetail.details.requiredPlanLevel,
-                              ),
-                            );
-                          } else {
-                            if (contentDetail.details.type == VideoType.movie) {
-                              Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
-                            } else if (contentDetail.details.type == VideoType.tvshow ||
-                                contentDetail.details.type == VideoType.episode) {
-                              Get.to(() => TVShowPreviewScreen(), arguments: contentDetail);
-                            } else if (contentDetail.details.type == VideoType.video) {
-                              Get.to(() => ContentDetailsScreen(), arguments: contentDetail);
-                            }
+                          if (contentDetail.details.type == VideoType.movie) {
+                            Get.to(() => ContentDetailsScreen(),
+                                arguments: contentDetail);
+                          } else if (contentDetail.details.type ==
+                                  VideoType.tvshow ||
+                              contentDetail.details.type ==
+                                  VideoType.episode) {
+                            Get.to(() => TVShowPreviewScreen(),
+                                arguments: contentDetail);
+                          } else if (contentDetail.details.type ==
+                              VideoType.video) {
+                            Get.to(() => ContentDetailsScreen(),
+                                arguments: contentDetail);
                           }
                         }
                       }
@@ -341,20 +375,29 @@ class PosterCardComponent extends StatelessWidget {
                   curve: Curves.easeOut,
                   height: isForSearch
                       ? (height ?? 150)
-                      : (controller.hasFocus.value ? (height ?? 150) * heightFactor : (height ?? 150)),
+                      : (controller.hasFocus.value
+                          ? (height ?? 150) * heightFactor
+                          : (height ?? 150)),
                   width: isForSearch
                       ? (width ?? 110)
-                      : (controller.hasFocus.value ? (width ?? 110) * widthFactor : (width ?? 110)),
+                      : (controller.hasFocus.value
+                          ? (width ?? 110) * widthFactor
+                          : (width ?? 110)),
                   transform: isForSearch
-                      ? (controller.hasFocus.value ? (Matrix4.identity()..scale(1.12)) : Matrix4.identity())
+                      ? (controller.hasFocus.value
+                          ? (Matrix4.identity()..scale(1.12))
+                          : Matrix4.identity())
                       : Matrix4.identity(),
                   transformAlignment: Alignment.center,
-                  margin: EdgeInsets.symmetric(vertical: controller.hasFocus.value ? 0 : 8, horizontal: 8),
+                  margin: EdgeInsets.symmetric(
+                      vertical: controller.hasFocus.value ? 0 : 8,
+                      horizontal: 8),
                   decoration: boxDecorationDefault(
                     borderRadius: radius(8),
                     color: cardColor,
                     border: focusBorder(controller.hasFocus.value),
-                    boxShadow: (controller.hasFocus.value && !controller.showTrailer.value)
+                    boxShadow: (controller.hasFocus.value &&
+                            !controller.showTrailer.value)
                         ? [
                             BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.5),
@@ -367,20 +410,31 @@ class PosterCardComponent extends StatelessWidget {
                   child: Stack(
                     children: [
                       if (isLoading)
-                        ShimmerWidget(height: double.infinity, width: double.infinity, radius: 8)
+                        ShimmerWidget(
+                            height: double.infinity,
+                            width: double.infinity,
+                            radius: 8)
                       else if (controller.showTrailer.value && isPlayTrailer)
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: TrailerPlayerWidget(
                             videoModel: ContentModel(
                               details: contentDetail.details,
-                              downloadData: DownloadDataModel(downloadQualities: DownloadQualities()),
-                              trailerData: (contentDetail.details.trailerUrl?.isNotEmpty ?? false)
+                              downloadData: DownloadDataModel(
+                                  downloadQualities: DownloadQualities()),
+                              trailerData: (contentDetail
+                                          .details.trailerUrl?.isNotEmpty ??
+                                      false)
                                   ? [
                                       VideoData(
-                                        url: contentDetail.details.trailerUrl ?? '',
-                                        urlType: _getUrlTypeFromUrl(contentDetail.details.trailerUrl ?? '',
-                                            contentDetail.details.trailerUrlType ?? ''),
+                                        url: contentDetail.details.trailerUrl ??
+                                            '',
+                                        urlType: _getUrlTypeFromUrl(
+                                            contentDetail.details.trailerUrl ??
+                                                '',
+                                            contentDetail
+                                                    .details.trailerUrlType ??
+                                                ''),
                                       )
                                     ]
                                   : [],
@@ -401,8 +455,10 @@ class PosterCardComponent extends StatelessWidget {
                           ),
                         ),
                       if (!controller.showTrailer.value)
-                        if (contentDetail.details.access == MovieAccess.paidAccess ||
-                            !contentDetail.details.hasContentAccess.getBoolInt())
+                        if (contentDetail.details.access ==
+                                MovieAccess.paidAccess ||
+                            !contentDetail.details.hasContentAccess
+                                .getBoolInt())
                           Positioned(
                             right: 8,
                             top: 8,
@@ -410,35 +466,46 @@ class PosterCardComponent extends StatelessWidget {
                               height: 20,
                               width: 20,
                               padding: const EdgeInsets.all(4),
-                              decoration: boxDecorationDefault(shape: BoxShape.circle, color: yellowColor),
-                              child: const CachedImageWidget(url: Assets.iconsIcVector),
+                              decoration: boxDecorationDefault(
+                                  shape: BoxShape.circle, color: yellowColor),
+                              child: const CachedImageWidget(
+                                  url: Assets.iconsIcVector),
                             ),
                           ),
                       if (!controller.showTrailer.value)
-                        if (contentDetail.details.access == MovieAccess.payPerView)
+                        if (contentDetail.details.access ==
+                            MovieAccess.payPerView)
                           Positioned(
                             top: 8,
                             right: 8,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration:
-                                  boxDecorationDefault(borderRadius: BorderRadius.circular(4), color: rentedColor),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: boxDecorationDefault(
+                                  borderRadius: BorderRadius.circular(4),
+                                  color: rentedColor),
                               child: Row(
                                 spacing: 4,
                                 children: [
                                   const CachedImageWidget(
-                                      url: Assets.iconsIcRent, height: 8, width: 8, color: Colors.white),
+                                      url: Assets.iconsIcRent,
+                                      height: 8,
+                                      width: 8,
+                                      color: Colors.white),
                                   Text(
-                                    contentDetail.details.hasContentAccess.getBoolInt()
+                                    contentDetail.details.hasContentAccess
+                                            .getBoolInt()
                                         ? locale.value.rented
                                         : locale.value.rent,
-                                    style: secondaryTextStyle(color: white, size: 10),
+                                    style: secondaryTextStyle(
+                                        color: white, size: 10),
                                   ),
                                 ],
                               ),
                             ),
                           ),
-                      if (controller.hasFocus.value && !controller.showTrailer.value)
+                      if (controller.hasFocus.value &&
+                          !controller.showTrailer.value)
                         Positioned.fill(
                           child: Container(
                             decoration: BoxDecoration(
@@ -461,31 +528,54 @@ class PosterCardComponent extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(contentDetail.details.name,
-                                      style: boldTextStyle(), maxLines: 2, overflow: TextOverflow.ellipsis),
+                                      style: boldTextStyle(),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis),
                                   const SizedBox(height: 6),
                                   if (isHorizontalList &&
-                                      (contentDetail.details.duration.toString().isNotEmpty ||
-                                          contentDetail.details.imdbRating.toString().isNotEmpty))
+                                      (contentDetail.details.duration
+                                              .toString()
+                                              .isNotEmpty ||
+                                          contentDetail.details.imdbRating
+                                              .toString()
+                                              .isNotEmpty))
                                     Flexible(
                                       child: Row(
                                         children: [
-                                          if (contentDetail.details.imdbRating.toString().isNotEmpty)
+                                          if (contentDetail.details.imdbRating
+                                              .toString()
+                                              .isNotEmpty)
                                             Flexible(
                                               child: Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2),
                                                 decoration: BoxDecoration(
-                                                    color: Colors.yellow.withValues(alpha: 0.2),
-                                                    borderRadius: BorderRadius.circular(4)),
+                                                    color: Colors.yellow
+                                                        .withValues(alpha: 0.2),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            4)),
                                                 child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
                                                   children: [
-                                                    const Icon(Icons.star, color: Colors.yellow, size: 12),
+                                                    const Icon(Icons.star,
+                                                        color: Colors.yellow,
+                                                        size: 12),
                                                     const SizedBox(width: 4),
                                                     Flexible(
                                                       child: Text(
-                                                        contentDetail.details.imdbRating.toString(),
-                                                        style: boldTextStyle(color: Colors.yellow, size: 11),
-                                                        overflow: TextOverflow.ellipsis,
+                                                        contentDetail
+                                                            .details.imdbRating
+                                                            .toString(),
+                                                        style: boldTextStyle(
+                                                            color:
+                                                                Colors.yellow,
+                                                            size: 11),
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       ),
                                                     ),
                                                   ],
@@ -494,13 +584,18 @@ class PosterCardComponent extends StatelessWidget {
                                             ),
 
                                           // Runtime
-                                          if (contentDetail.details.duration.toString().isNotEmpty) ...[
+                                          if (contentDetail.details.duration
+                                              .toString()
+                                              .isNotEmpty) ...[
                                             const SizedBox(width: 8),
                                             Flexible(
                                               child: Text(
-                                                contentDetail.details.duration.toString(),
+                                                contentDetail.details.duration
+                                                    .toString(),
                                                 style: primaryTextStyle(
-                                                    color: Colors.white.withValues(alpha: 0.8), size: 11),
+                                                    color: Colors.white
+                                                        .withValues(alpha: 0.8),
+                                                    size: 11),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),

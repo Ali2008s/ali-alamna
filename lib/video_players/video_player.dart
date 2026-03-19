@@ -82,7 +82,9 @@ class VideoPlayersComponent extends StatelessWidget {
           controller.videoUrlType.toLowerCase() ==
               PlayerTypes.hls.toLowerCase() ||
           controller.videoUrlType.toLowerCase() ==
-              PlayerTypes.local.toLowerCase());
+              PlayerTypes.local.toLowerCase() ||
+          controller.videoUrlType.toLowerCase() ==
+              PlayerTypes.mp4.toLowerCase());
 
   bool isVimeo(VideoPlayersController controller) =>
       (controller.videoUrlType.toLowerCase() ==

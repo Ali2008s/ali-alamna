@@ -1783,7 +1783,7 @@ class VideoPlayersController extends GetxController {
     removeVideoChannelListener();
 
     //initialize the WebViewController with the provided URL
-    final embedHtml = movieEmbedCode(url);
+    final embedHtml = movieEmbedCode(url, autoplay: true);
     webViewController.value = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.transparent)
@@ -1927,7 +1927,8 @@ class VideoPlayersController extends GetxController {
         },
       );
 
-    if (videoUrlType.value.toLowerCase() == PlayerTypes.vimeo.toLowerCase()) {
+    if (videoUrlType.value.toLowerCase() == PlayerTypes.vimeo.toLowerCase() || 
+       (videoUrlType.value.toLowerCase() == PlayerTypes.embedded.toLowerCase() && (url.startsWith('http://') || url.startsWith('https://')) && !url.contains('<iframe'))) {
       webViewController.value.loadRequest(
         Uri.parse(url),
         headers: {

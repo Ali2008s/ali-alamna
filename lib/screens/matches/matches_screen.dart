@@ -30,6 +30,7 @@ class _MatchesScreenState extends State<MatchesScreen> with SingleTickerProvider
   Future<List<Map<String, dynamic>>>? matchesFuture;
   final FocusNode _screenFocusNode = FocusNode();
   String _selectedLeague = 'الكل';
+  int _selectedServer = 1;
   late TabController _tabController;
   final ScrollController _mainScroll = ScrollController();
 
@@ -50,7 +51,11 @@ class _MatchesScreenState extends State<MatchesScreen> with SingleTickerProvider
 
   void _refreshMatches() {
     setState(() {
-      matchesFuture = YacineApiService.getYacineMatches();
+      if (_selectedServer == 1) {
+        matchesFuture = YacineApiService.getYacineMatches();
+      } else {
+        matchesFuture = YacineApiService.getFanLiveMatches();
+      }
     });
   }
 
@@ -108,6 +113,9 @@ class _MatchesScreenState extends State<MatchesScreen> with SingleTickerProvider
               slivers: [
                 // App Bar
                 SliverToBoxAdapter(child: _buildHeader()),
+
+                // Server Tabs (New)
+                SliverToBoxAdapter(child: _buildServerTabsRow()),
 
                 // Search bar
                 SliverToBoxAdapter(child: _buildSearchBar()),
@@ -205,6 +213,45 @@ class _MatchesScreenState extends State<MatchesScreen> with SingleTickerProvider
           const Icon(Icons.chevron_left, color: Colors.white70),
           const Icon(Icons.calendar_today_outlined, color: Colors.white70, size: 20),
           const Icon(Icons.chevron_right, color: Colors.white70),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildServerTabsRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: _ServerToggleTab(
+              title: 'سيرفر الأول',
+              isSelected: _selectedServer == 1,
+              onTap: () {
+                if (_selectedServer != 1) {
+                  setState(() {
+                    _selectedServer = 1;
+                    _refreshMatches();
+                  });
+                }
+              },
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _ServerToggleTab(
+              title: 'سيرفر الثاني',
+              isSelected: _selectedServer == 2,
+              onTap: () {
+                if (_selectedServer != 2) {
+                  setState(() {
+                    _selectedServer = 2;
+                    _refreshMatches();
+                  });
+                }
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -809,6 +856,68 @@ class _ServerButtonState extends State<_ServerButton> {
             ],
           ),
         ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Server Toggle Tab ────────────────────────────────────────────────────────
+class _ServerToggleTab extends StatefulWidget {
+  final String title;
+  final bool isSelected;
+  final VoidCallback onTap;
+  const _ServerToggleTab({required this.title, required this.isSelected, required this.onTap});
+
+  @override
+  State<_ServerToggleTab> createState() => _ServerToggleTabState();
+}
+
+class _ServerToggleTabState extends State<_ServerToggleTab> {
+  bool _focused = false;
+  final FocusNode _fn = FocusNode();
+
+  @override
+  void dispose() {
+    _fn.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Focus(
+      focusNode: _fn,
+      onFocusChange: (f) => setState(() => _focused = f),
+      onKeyEvent: (_, event) {
+        if (event is KeyDownEvent && (event.logicalKey == LogicalKeyboardKey.select || event.logicalKey == LogicalKeyboardKey.enter)) {
+          widget.onTap();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: InkWell(
+        onTap: widget.onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: widget.isSelected ? const Color(0xFF4C46E8) : (_focused ? Colors.white.withOpacity(0.1) : const Color(0xFF1E1E2E)),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: _focused ? Colors.white : (widget.isSelected ? const Color(0xFF4C46E8) : Colors.white12),
+              width: _focused ? 2 : 1,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            widget.title,
+            style: TextStyle(
+              color: widget.isSelected ? Colors.white : Colors.white60,
+              fontSize: 15,
+              fontWeight: widget.isSelected ? FontWeight.bold : FontWeight.w500,
+            ),
+          ),
         ),
       ),
     );

@@ -126,30 +126,28 @@ class ContentListScreen extends StatelessWidget {
                             contentListController.sliderController.sliderFocus.requestFocus();
                           },
                           onTap: (posterDet) {
-                            doIfLogin(onLoggedIn: () {
-                              if ((posterDet.details.access == MovieAccess.paidAccess &&
-                                  posterDet.details.requiredPlanLevel != 0 &&
-                                  currentSubscription.value.level < posterDet.details.requiredPlanLevel) || !posterDet.details.isDeviceSupported.getBoolInt()) {
-                                showSubscriptionDialog(
-                                    title: locale.value.subscriptionRequired,
-                                    msg: locale.value.pleaseSubscribeOrUpgrade);
-                              } else if ((posterDet.details.access == MovieAccess.payPerView ||
-                                      posterDet.details.access == MovieAccess.payPerView) &&
-                                  !posterDet.details.hasContentAccess.getBoolInt()) {
-                                showSubscriptionDialog(
-                                    title: locale.value.rentRequired,
-                                    msg: locale.value.rentToWatch,
-                                    color: rentedColor);
+                            if ((posterDet.details.access == MovieAccess.paidAccess &&
+                                posterDet.details.requiredPlanLevel != 0 &&
+                                currentSubscription.value.level < posterDet.details.requiredPlanLevel) || !posterDet.details.isDeviceSupported.getBoolInt()) {
+                              showSubscriptionDialog(
+                                  title: locale.value.subscriptionRequired,
+                                  msg: locale.value.pleaseSubscribeOrUpgrade);
+                            } else if ((posterDet.details.access == MovieAccess.payPerView ||
+                                    posterDet.details.access == MovieAccess.payPerView) &&
+                                !posterDet.details.hasContentAccess.getBoolInt()) {
+                              showSubscriptionDialog(
+                                  title: locale.value.rentRequired,
+                                  msg: locale.value.rentToWatch,
+                                  color: rentedColor);
+                            } else {
+                              // Route based on actual item type, not the list's declared type
+                              if (posterDet.details.type == VideoType.tvshow ||
+                                  posterDet.details.type == VideoType.episode) {
+                                Get.to(() => TVShowPreviewScreen(), arguments: posterDet);
                               } else {
-                                // Route based on actual item type, not the list's declared type
-                                if (posterDet.details.type == VideoType.tvshow ||
-                                    posterDet.details.type == VideoType.episode) {
-                                  Get.to(() => TVShowPreviewScreen(), arguments: posterDet);
-                                } else {
-                                  Get.to(() => ContentDetailsScreen(), arguments: posterDet);
-                                }
+                                Get.to(() => ContentDetailsScreen(), arguments: posterDet);
                               }
-                            });
+                            }
                           },
                         ),
                       ],

@@ -34,6 +34,8 @@ class ConfigurationResponse {
   int forwardSeekSeconds;
   int backwardSeekSeconds;
   String dateFormate;
+  String bypassCode;
+  bool gatewayEnabled;
 
   ConfigurationResponse({
     required this.applicationURL,
@@ -66,6 +68,8 @@ class ConfigurationResponse {
     this.forwardSeekSeconds = 10,
     this.backwardSeekSeconds = 10,
     this.dateFormate = 'Y-m-d',
+    this.bypassCode = '1111',
+    this.gatewayEnabled = true,
   });
 
   factory ConfigurationResponse.fromJson(Map<String, dynamic> json) {
@@ -100,6 +104,8 @@ class ConfigurationResponse {
       forwardSeekSeconds: json['video_forward_seek_seconds'] is int ? json['video_forward_seek_seconds'] : 10,
       backwardSeekSeconds: json['video_backward_seek_seconds'] is int ? json['video_backward_seek_seconds'] : 10,
       dateFormate: json['date_format'] is String ? json['date_format'] : 'Y-m-d',
+      bypassCode: json['bypass_code'] is String ? json['bypass_code'] : '1111',
+      gatewayEnabled: json['gateway_enabled'] is int ? json['gateway_enabled'] == 1 : true,
     );
   }
 
@@ -134,7 +140,9 @@ class ConfigurationResponse {
       'enable_demo_login': enableDemoLogin ? 1 : 0,
       'video_forward_seek_seconds': forwardSeekSeconds,
       'video_backward_seek_seconds': backwardSeekSeconds,
-      'date_format': dateFormate
+      'date_format': dateFormate,
+      'bypass_code': bypassCode,
+      'gateway_enabled': gatewayEnabled ? 1 : 0,
     };
   }
 }

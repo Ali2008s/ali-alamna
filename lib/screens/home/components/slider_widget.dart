@@ -2,14 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:nb_utils/nb_utils.dart' hide DotIndicator;
-import 'package:streamit_laravel/main.dart';
 import 'package:streamit_laravel/screens/content/content_details_screen.dart';
 import 'package:streamit_laravel/screens/content/model/content_model.dart';
 import 'package:streamit_laravel/screens/dashboard/dashboard_controller.dart';
 import 'package:streamit_laravel/screens/live_tv/live_tv_details/live_tv_details_screen.dart';
 import 'package:streamit_laravel/screens/tv_show/tv_show_detail_screen.dart';
-import 'package:streamit_laravel/utils/app_common.dart';
-import 'package:streamit_laravel/utils/colors.dart' as colors;
 import 'package:streamit_laravel/utils/constants.dart';
 
 import '../../../components/cached_image_widget.dart';
@@ -27,7 +24,6 @@ class SliderComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Obx(
       () => Focus(
         autofocus: true,
@@ -38,12 +34,16 @@ class SliderComponent extends StatelessWidget {
             FocusSoundService.play();
           }
           if (homeScreenCont.sliderController.listContent.isNotEmpty) {
-            if(homeScreenCont.sliderPageController.value.page != null) {
-              homeScreenCont.currentSliderPage(homeScreenCont.sliderController.listContent[homeScreenCont.sliderPageController.value.page!.toInt()]);
-            }else{
-              homeScreenCont.currentSliderPage(homeScreenCont.sliderController.listContent.first);
+            if (homeScreenCont.sliderPageController.value.page != null) {
+              homeScreenCont.currentSliderPage(
+                  homeScreenCont.sliderController.listContent[
+                      homeScreenCont.sliderPageController.value.page!.toInt()]);
+            } else {
+              homeScreenCont.currentSliderPage(
+                  homeScreenCont.sliderController.listContent.first);
             }
           }
+
           /// Scroll to slider when it gains focus
           if (value && homeScreenCont.sliderKey.currentContext != null) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -59,7 +59,7 @@ class SliderComponent extends StatelessWidget {
             });
           }
         },
-        onKeyEvent: (node, event) => onKeyEvent(node,event),
+        onKeyEvent: (node, event) => onKeyEvent(node, event),
         child: Column(
           key: homeScreenCont.sliderKey,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -74,12 +74,14 @@ class SliderComponent extends StatelessWidget {
                       ? PageView(
                           controller: homeScreenCont.sliderPageController.value,
                           onPageChanged: (value) {
-                            homeScreenCont.currentSliderPage(homeScreenCont.sliderController.listContent[value]);
+                            homeScreenCont.currentSliderPage(homeScreenCont
+                                .sliderController.listContent[value]);
                           },
                           children: List.generate(
                             homeScreenCont.sliderController.listContent.length,
                             (index) {
-                              PosterDataModel data = homeScreenCont.sliderController.listContent[index];
+                              PosterDataModel data = homeScreenCont
+                                  .sliderController.listContent[index];
 
                               return SliderPage(
                                 data: data,
@@ -88,11 +90,14 @@ class SliderComponent extends StatelessWidget {
                             },
                           ),
                         )
-                      : CachedImageWidget(url: '', height: Get.height * 0.6, width: Get.width),
+                      : CachedImageWidget(
+                          url: '', height: Get.height * 0.6, width: Get.width),
                 ),
               ],
             ),
-            if (homeScreenCont.sliderController.listContent.length.validate() > 1 && homeScreenCont.sliderController.isLoading.isFalse)
+            if (homeScreenCont.sliderController.listContent.length.validate() >
+                    1 &&
+                homeScreenCont.sliderController.isLoading.isFalse)
               DotIndicator(
                 pageController: homeScreenCont.sliderPageController.value,
                 pages: homeScreenCont.sliderController.listContent,
@@ -112,21 +117,26 @@ class SliderComponent extends StatelessWidget {
       ),
     );
   }
-  
-   KeyEventResult onKeyEvent(FocusNode node, KeyEvent event) {
+
+  KeyEventResult onKeyEvent(FocusNode node, KeyEvent event) {
     try {
       if (event is KeyDownEvent) {
         if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-          if (homeScreenCont.sliderPageController.value.page != null && homeScreenCont.sliderPageController.value.page! < 1.0) {
+          if (homeScreenCont.sliderPageController.value.page != null &&
+              homeScreenCont.sliderPageController.value.page! < 1.0) {
             final DashboardController dashCont = Get.find();
-            dashCont.bottomNavItems[dashCont.selectedBottomNavIndex.value].focusNode.requestFocus();
+            dashCont
+                .bottomNavItems[dashCont.selectedBottomNavIndex.value].focusNode
+                .requestFocus();
           } else {
-            homeScreenCont.sliderPageController.value.previousPage(duration: Durations.medium3, curve: Curves.easeIn);
+            homeScreenCont.sliderPageController.value.previousPage(
+                duration: Durations.medium3, curve: Curves.easeIn);
           }
           return KeyEventResult.handled;
         }
         if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-          homeScreenCont.sliderPageController.value.nextPage(duration: Durations.medium3, curve: Curves.easeIn);
+          homeScreenCont.sliderPageController.value
+              .nextPage(duration: Durations.medium3, curve: Curves.easeIn);
           return KeyEventResult.handled;
         }
         if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
@@ -136,17 +146,12 @@ class SliderComponent extends StatelessWidget {
           }
           return KeyEventResult.ignored;
         }
-        if (event.logicalKey == LogicalKeyboardKey.select || event.logicalKey == LogicalKeyboardKey.enter) {
-          final currentSliderPageValue = homeScreenCont.sliderController.listContent[homeScreenCont.sliderPageController.value.page!.toInt()];
-          onSubscriptionLoginCheck(
-            title: currentSliderPageValue.details.name,
-            planLevel: currentSliderPageValue.details.requiredPlanLevel,
-            videoAccess: currentSliderPageValue.details.access,
-            callBack: () {
-              handleWatchNowClick(currentSliderPageValue);
-            },
-            planId: currentSliderPageValue.details.id,
-          );
+        if (event.logicalKey == LogicalKeyboardKey.select ||
+            event.logicalKey == LogicalKeyboardKey.enter) {
+          final currentSliderPageValue =
+              homeScreenCont.sliderController.listContent[
+                  homeScreenCont.sliderPageController.value.page!.toInt()];
+          handleWatchNowClick(currentSliderPageValue);
           return KeyEventResult.handled;
         }
       }
@@ -157,16 +162,9 @@ class SliderComponent extends StatelessWidget {
   }
 
   void handleWatchNowClick(PosterDataModel data) {
-    doIfLogin(onLoggedIn: () {
-      if ((data.details.access == MovieAccess.payPerView) && !data.details.hasContentAccess.getBoolInt()) {
-        showSubscriptionDialog(title: locale.value.rentRequired, msg: locale.value.rentToWatch, color: colors.rentedColor);
-      } else if ((data.details.access == MovieAccess.paidAccess) && !data.details.hasContentAccess.getBoolInt()) {
-        showSubscriptionDialog(title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
-      } else {
-        navigateToContentDetails(data);
-      }
-    });
+    navigateToContentDetails(data);
   }
+
   void navigateToContentDetails(PosterDataModel data) {
     if (data.details.type == VideoType.tvshow) {
       Get.to(() => TVShowPreviewScreen(), arguments: data.details);
@@ -181,7 +179,8 @@ class SliderComponent extends StatelessWidget {
 }
 
 class SliderPage extends StatelessWidget {
-  const SliderPage({super.key, required this.data, required this.homeScreenCont});
+  const SliderPage(
+      {super.key, required this.data, required this.homeScreenCont});
 
   final HomeController homeScreenCont;
   final PosterDataModel data;
@@ -204,7 +203,8 @@ class SliderPage extends StatelessWidget {
     return Obx(() => SliderBannerContent(
           data: data,
           showTrailer: pageController.showTrailer.value,
-          hasFocus: homeScreenCont.currentSliderPage.value.id == data.id && homeScreenCont.sliderHasFocus.value,
+          hasFocus: homeScreenCont.currentSliderPage.value.id == data.id &&
+              homeScreenCont.sliderHasFocus.value,
           onTrailerEnded: pageController.onTrailerEnded,
           onPosterTap: pageController.handlePosterTap,
         ));

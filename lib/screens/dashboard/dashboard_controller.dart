@@ -54,6 +54,13 @@ class DashboardController extends GetxController {
         type: BottomItem.matches,
         focusNode: FocusNode(),
         screen: SizedBox()),
+    BottomBarItem(
+        title: () => locale.value.movies,
+        icon: Icons.movie_outlined,
+        activeIcon: Icons.movie,
+        type: BottomItem.movies,
+        focusNode: FocusNode(),
+        screen: SizedBox()),
     /*BottomBarItem(
         title: () => 'فيديوهات قصيرة',
         icon: Icons.app_shortcut_outlined,
@@ -304,6 +311,9 @@ class DashboardController extends GetxController {
           break;
         case BottomItem.search:
           newScreen = SearchScreen();
+          break;
+        case BottomItem.movies:
+          newScreen = ContentListScreen(title: locale.value.movies, type: VideoType.movie);
           break;
         case BottomItem.matches:
           newScreen = MatchesScreen();

@@ -21,6 +21,7 @@ import '../screens/auth/model/app_configuration_res.dart';
 import '../screens/auth/model/change_password_res.dart';
 import '../screens/auth/model/login_response.dart';
 import '../screens/auth/model/notification_model.dart';
+import '../screens/auth/gateway_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/subscription/model/subscription_plan_model.dart';
 import '../utils/api_end_points.dart';
@@ -319,25 +320,16 @@ class AuthServiceApis {
               setJsonToLocal(SharedPreferenceConst.CACHE_CONFIGURATION_RESPONSE, configurationResponse.toJson());
 
               if (isFromSplashScreen) {
-                if (await getBoolFromLocal(SharedPreferenceConst.IS_LOGGED_IN, defaultValue: false) || isLoggedIn.value) {
-                  Get.offAll(() => WatchingProfileScreen(), arguments: true);
-                } else {
-                  Future.delayed(
-                    Duration(milliseconds: 800),
-                    () {
-                      Get.offAll(
-                        () => DashboardScreen(),
-                        binding: BindingsBuilder(
-                          () {
-                            getDashboardController().onBottomTabChange(BottomItem.home);
+                bool gatewayEnabled = configurationResponse.gatewayEnabled;
+                bool gatewayUnlocked = getBoolAsync('gateway_unlocked');
 
-                            //Get Ads
-                            getDashboardController().getActiveVastAds();
-                          },
-                        ),
-                      );
-                    },
-                  );
+                if (!gatewayEnabled || gatewayUnlocked) {
+                  Get.offAll(() => DashboardScreen(), binding: BindingsBuilder(() {
+                    getDashboardController().onBottomTabChange(BottomItem.home);
+                    getDashboardController().getActiveVastAds();
+                  }));
+                } else {
+                  Get.offAll(() => const GatewayScreen());
                 }
               } else {
                 //Get Ads

@@ -147,29 +147,13 @@ class SliderPageController extends GetxController {
 
   /// Handle select/enter key navigation
   KeyEventResult handleSelectKey() {
-    onSubscriptionLoginCheck(
-      title: currentSliderPageValue.value.details.name,
-      planLevel: currentSliderPageValue.value.details.requiredPlanLevel,
-      videoAccess: currentSliderPageValue.value.details.access,
-      callBack: () {
-        handleWatchNowClick(currentSliderPageValue.value);
-      },
-      planId: currentSliderPageValue.value.details.id,
-    );
+    navigateToContentDetails(currentSliderPageValue.value);
     return KeyEventResult.handled;
   }
 
   /// Handle watch now click with subscription/login check
   void handleWatchNowClick(PosterDataModel data) {
-    doIfLogin(onLoggedIn: () {
-      if ((data.details.access == MovieAccess.payPerView) && !data.details.hasContentAccess.getBoolInt()) {
-        showSubscriptionDialog(title: locale.value.rentRequired, msg: locale.value.rentToWatch, color: colors.rentedColor);
-      } else if ((data.details.access == MovieAccess.paidAccess) && !data.details.hasContentAccess.getBoolInt()) {
-        showSubscriptionDialog(title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
-      } else {
-        navigateToContentDetails(data);
-      }
-    });
+    navigateToContentDetails(data);
   }
 
   /// Navigate to appropriate screen based on content type
@@ -187,14 +171,7 @@ class SliderPageController extends GetxController {
 
   /// Handle poster tap with subscription check
   void handlePosterTap() {
-    final data = pageData;
-    if ((data.details.access == MovieAccess.payPerView) && !data.details.hasContentAccess.getBoolInt()) {
-      showSubscriptionDialog(title: locale.value.rentRequired, msg: locale.value.rentToWatch, color: colors.rentedColor);
-    } else if ((data.details.access == MovieAccess.paidAccess) && !data.details.hasContentAccess.getBoolInt()) {
-      showSubscriptionDialog(title: locale.value.subscriptionRequired, msg: locale.value.pleaseSubscribeOrUpgrade);
-    } else {
-      navigateToContentDetails(data);
-    }
+    navigateToContentDetails(pageData);
   }
 
   @override

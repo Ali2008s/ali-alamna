@@ -15,7 +15,6 @@ import 'package:streamit_laravel/screens/live_tv/model/live_tv_dashboard_respons
 import 'package:streamit_laravel/services/focus_sound_service.dart';
 import 'package:streamit_laravel/utils/app_common.dart';
 import 'package:streamit_laravel/utils/colors.dart';
-import 'package:streamit_laravel/utils/common_base.dart';
 import 'package:streamit_laravel/utils/constants.dart';
 
 import '../../../main.dart';
@@ -187,73 +186,29 @@ class PosterCardComponent extends StatelessWidget {
                 return KeyEventResult.handled;
               }
 
-              final isFreeContent = contentDetail.details.access.toString() ==
-                  MovieAccess.freeAccess;
-              if (isFreeContent) {
-                if (contentDetail.details.releaseDate.isNotEmpty &&
-                    isComingSoon(contentDetail.details.releaseDate)) {
-                  ComingSoonController comingSoonCont =
-                      Get.put(ComingSoonController());
-                  Get.to(
-                    () => ComingSoonDetailScreen(
-                      comingSoonCont: comingSoonCont,
-                      comingSoonData: ComingSoonModel.fromJson(
-                          contentDetail.details.toListJson()),
-                    ),
-                  );
-                } else {
-                  if (contentDetail.details.type == VideoType.movie) {
-                    Get.to(() => ContentDetailsScreen(),
-                        arguments: contentDetail);
-                  } else if (contentDetail.details.type == VideoType.tvshow ||
-                      contentDetail.details.type == VideoType.episode) {
-                    Get.to(() => TVShowPreviewScreen(),
-                        arguments: contentDetail);
-                  } else if (contentDetail.details.type == VideoType.video) {
-                    Get.to(() => ContentDetailsScreen(),
-                        arguments: contentDetail);
-                  }
-                }
+              if (contentDetail.details.releaseDate.isNotEmpty &&
+                  isComingSoon(contentDetail.details.releaseDate)) {
+                ComingSoonController comingSoonCont =
+                    Get.put(ComingSoonController());
+                Get.to(
+                  () => ComingSoonDetailScreen(
+                    comingSoonCont: comingSoonCont,
+                    comingSoonData: ComingSoonModel.fromJson(
+                        contentDetail.details.toListJson()),
+                  ),
+                );
               } else {
-                doIfLogin(onLoggedIn: () {
-                  if ((contentDetail.details.access.toString() ==
-                              MovieAccess.paidAccess &&
-                          isMoviePaid(
-                              requiredPlanLevel:
-                                  contentDetail.details.requiredPlanLevel)) ||
-                      !contentDetail.details.isDeviceSupported.getBoolInt()) {
-                    showSubscriptionDialog(
-                        title: locale.value.subscriptionRequired,
-                        msg: locale.value.pleaseSubscribeOrUpgrade);
-                  } else {
-                    if (contentDetail.details.releaseDate.isNotEmpty &&
-                        isComingSoon(contentDetail.details.releaseDate)) {
-                      ComingSoonController comingSoonCont =
-                          Get.put(ComingSoonController());
-                      Get.to(
-                        () => ComingSoonDetailScreen(
-                          comingSoonCont: comingSoonCont,
-                          comingSoonData: ComingSoonModel.fromJson(
-                              contentDetail.details.toListJson()),
-                        ),
-                      );
-                    } else {
-                      if (contentDetail.details.type == VideoType.movie) {
-                        Get.to(() => ContentDetailsScreen(),
-                            arguments: contentDetail);
-                      } else if (contentDetail.details.type ==
-                              VideoType.tvshow ||
-                          contentDetail.details.type == VideoType.episode) {
-                        Get.to(() => TVShowPreviewScreen(),
-                            arguments: contentDetail);
-                      } else if (contentDetail.details.type ==
-                          VideoType.video) {
-                        Get.to(() => ContentDetailsScreen(),
-                            arguments: contentDetail);
-                      }
-                    }
-                  }
-                });
+                if (contentDetail.details.type == VideoType.movie) {
+                  Get.to(() => ContentDetailsScreen(),
+                      arguments: contentDetail);
+                } else if (contentDetail.details.type == VideoType.tvshow ||
+                    contentDetail.details.type == VideoType.episode) {
+                  Get.to(() => TVShowPreviewScreen(),
+                      arguments: contentDetail);
+                } else if (contentDetail.details.type == VideoType.video) {
+                  Get.to(() => ContentDetailsScreen(),
+                      arguments: contentDetail);
+                }
               }
               return KeyEventResult.handled;
             }
@@ -294,78 +249,30 @@ class PosterCardComponent extends StatelessWidget {
                     return;
                   }
 
-                  final isFreeContent =
-                      contentDetail.details.access.toString() ==
-                          MovieAccess.freeAccess;
-                  if (isFreeContent) {
-                    if (contentDetail.details.releaseDate.isNotEmpty &&
-                        isComingSoon(contentDetail.details.releaseDate)) {
-                      ComingSoonController comingSoonCont =
-                          Get.put(ComingSoonController());
-                      Get.to(
-                        () => ComingSoonDetailScreen(
-                          comingSoonCont: comingSoonCont,
-                          comingSoonData: ComingSoonModel.fromJson(
-                              contentDetail.details.toListJson()),
-                        ),
-                      );
-                    } else {
-                      if (contentDetail.details.type == VideoType.movie) {
-                        Get.to(() => ContentDetailsScreen(),
-                            arguments: contentDetail);
-                      } else if (contentDetail.details.type ==
-                              VideoType.tvshow ||
-                          contentDetail.details.type == VideoType.episode) {
-                        Get.to(() => TVShowPreviewScreen(),
-                            arguments: contentDetail);
-                      } else if (contentDetail.details.type ==
-                          VideoType.video) {
-                        Get.to(() => ContentDetailsScreen(),
-                            arguments: contentDetail);
-                      }
-                    }
+                  if (contentDetail.details.releaseDate.isNotEmpty &&
+                      isComingSoon(contentDetail.details.releaseDate)) {
+                    ComingSoonController comingSoonCont =
+                        Get.put(ComingSoonController());
+                    Get.to(
+                      () => ComingSoonDetailScreen(
+                        comingSoonCont: comingSoonCont,
+                        comingSoonData: ComingSoonModel.fromJson(
+                            contentDetail.details.toListJson()),
+                      ),
+                    );
                   } else {
-                    doIfLogin(onLoggedIn: () {
-                      if ((contentDetail.details.access.toString() ==
-                                  MovieAccess.paidAccess &&
-                              isMoviePaid(
-                                  requiredPlanLevel: contentDetail
-                                      .details.requiredPlanLevel)) ||
-                          !contentDetail.details.isDeviceSupported
-                              .getBoolInt()) {
-                        showSubscriptionDialog(
-                            title: locale.value.subscriptionRequired,
-                            msg: locale.value.pleaseSubscribeOrUpgrade);
-                      } else {
-                        if (contentDetail.details.releaseDate.isNotEmpty &&
-                            isComingSoon(contentDetail.details.releaseDate)) {
-                          ComingSoonController comingSoonCont =
-                              Get.put(ComingSoonController());
-                          Get.to(
-                            () => ComingSoonDetailScreen(
-                              comingSoonCont: comingSoonCont,
-                              comingSoonData: ComingSoonModel.fromJson(
-                                  contentDetail.details.toListJson()),
-                            ),
-                          );
-                        } else {
-                          if (contentDetail.details.type == VideoType.movie) {
-                            Get.to(() => ContentDetailsScreen(),
-                                arguments: contentDetail);
-                          } else if (contentDetail.details.type ==
-                                  VideoType.tvshow ||
-                              contentDetail.details.type ==
-                                  VideoType.episode) {
-                            Get.to(() => TVShowPreviewScreen(),
-                                arguments: contentDetail);
-                          } else if (contentDetail.details.type ==
-                              VideoType.video) {
-                            Get.to(() => ContentDetailsScreen(),
-                                arguments: contentDetail);
-                          }
-                        }
-                      }
-                    });
+                    if (contentDetail.details.type == VideoType.movie) {
+                      Get.to(() => ContentDetailsScreen(),
+                          arguments: contentDetail);
+                    } else if (contentDetail.details.type ==
+                            VideoType.tvshow ||
+                        contentDetail.details.type == VideoType.episode) {
+                      Get.to(() => TVShowPreviewScreen(),
+                          arguments: contentDetail);
+                    } else if (contentDetail.details.type == VideoType.video) {
+                      Get.to(() => ContentDetailsScreen(),
+                          arguments: contentDetail);
+                    }
                   }
                 },
             child: Obx(

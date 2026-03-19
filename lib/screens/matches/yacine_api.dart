@@ -99,6 +99,62 @@ class YacineApiService {
     }
   }
 
+  static Future<List<Map<String, dynamic>>> getFanLiveMatches() async {
+    try {
+      final response = await http.get(Uri.parse('https://fan.oxml1237.workers.dev/?url=https://app.fanlive.org/new/matches.json'));
+      if (response.statusCode != 200) return [];
+      
+      final List<dynamic> tableRows = jsonDecode(response.body);
+      List<Map<String, dynamic>> teamData = [];
+      final currentTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      
+      for (var row in tableRows) {
+        Map<String, dynamic> teamEntry = {};
+        
+        num startNum = row['start_time'] ?? 0;
+        num endNum = row['end_time'] ?? 0;
+        
+        int start = startNum.toInt();
+        int end = endNum.toInt();
+        
+        String status = row['match_status'] ?? '';
+        if (status.contains('تبدأ') || currentTime < start) {
+            final startDate = DateTime.fromMillisecondsSinceEpoch(start * 1000);
+            final sdf = DateFormat('hh:mm a', 'en_US');
+            status = sdf.format(startDate);
+        } else if (currentTime >= start && currentTime <= end) {
+            status = 'جارية الآن';
+        } else {
+            status = 'إنتهت المباراة';
+        }
+        
+        final dateObj = DateTime.fromMillisecondsSinceEpoch(start * 1000);
+        final dateFormat = DateFormat('EEEE d', 'en_US');
+        String matchDate = dateFormat.format(dateObj);
+        
+        teamEntry['id'] = row['id'] ?? '';
+        teamEntry['start_time'] = start;
+        teamEntry['end_time'] = end;
+        teamEntry['champions'] = row['champions'] ?? '';
+        teamEntry['commentary'] = row['commentary'] ?? '';
+        teamEntry['channel'] = row['channel'] ?? '';
+        teamEntry['status'] = status;
+        teamEntry['date'] = matchDate;
+        
+        teamEntry['team_1_name'] = row['name1'] ?? '';
+        teamEntry['team_1_logo'] = row['logo1'] ?? '';
+        teamEntry['team_2_name'] = row['name2'] ?? '';
+        teamEntry['team_2_logo'] = row['logo2'] ?? '';
+        
+        teamData.add(teamEntry);
+      }
+      return teamData;
+    } catch (e) {
+      print('FanLive API error: $e');
+      return [];
+    }
+  }
+
   static Future<List<Map<String, dynamic>>> getServers(String matchId) async {
     try {
       final id = matchId.replaceAll('api_', '');

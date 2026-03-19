@@ -595,6 +595,7 @@ class PlayerTypes {
   static const youtube = 'youtube';
   static const embedded = 'Embedded';
   static const x265 = 'x265';
+  static const mp4 = 'mp4';
 }
 
 //Video Type

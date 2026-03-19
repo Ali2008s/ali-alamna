@@ -15,8 +15,6 @@ class SplashScreen extends StatelessWidget {
 
   SplashScreen({super.key, this.deepLink = "", this.link});
 
-  /// دائماً احذف الـ Controller القديم وأنشئ واحداً جديداً
-  /// هذا يحل مشكلة التوقف عند إعادة الدخول
   SplashScreenController get splashController {
     if (Get.isRegistered<SplashScreenController>()) {
       Get.delete<SplashScreenController>(force: true);
@@ -33,18 +31,41 @@ class SplashScreen extends StatelessWidget {
     }
     return AppScaffold(
       hideAppBar: true,
-      scaffoldBackgroundColor: appScreenBackgroundDark,
-      body: SizedBox(
+      scaffoldBackgroundColor: const Color(0xFF0A0A14),
+      body: Container(
         height: Get.height,
         width: Get.width,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0A0A14),
+              Color(0xFF12121F),
+            ],
+          ),
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // لوكو عالمنا الجديد
             Image.asset(
-              Assets.assetsAppLogo,
-              height: 56,
+              'assets/images/logo_splas.png',
+              height: 200,
+              fit: BoxFit.contain,
+              errorBuilder: (c, e, s) => Image.asset(
+                Assets.assetsAppLogo,
+                height: 100,
+                errorBuilder: (c, e, s) => const Icon(Icons.play_circle_fill, color: appColorPrimary, size: 80),
+              ),
             ).center(),
+            const SizedBox(height: 20),
+            Text(
+              "عالمنا",
+              style: boldTextStyle(color: Colors.white70, size: 18),
+            ).center(),
+            const SizedBox(height: 40),
             Obx(
               () => controller.isLoading.value
                   ? LoaderWidget().center()
@@ -54,7 +75,7 @@ class SplashScreen extends StatelessWidget {
                         controller.init(showLoader: true);
                       },
                     ).visible(controller.appNotSynced.isTrue),
-            )
+            ),
           ],
         ),
       ),

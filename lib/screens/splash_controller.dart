@@ -17,6 +17,7 @@ import 'package:streamit_laravel/screens/profile/model/profile_detail_resp.dart'
 import 'package:streamit_laravel/screens/subscription/model/subscription_plan_model.dart';
 import 'package:streamit_laravel/utils/app_common.dart';
 
+import 'package:streamit_laravel/screens/auth/gateway_screen.dart';
 import '../network/auth_apis.dart';
 import '../utils/common_base.dart';
 import '../utils/constants.dart';
@@ -230,18 +231,21 @@ class SplashScreenController extends GetxController {
 
     Future.delayed(const Duration(milliseconds: 300), () {
       try {
-        if (isLoggedIn.value) {
-          Get.offAll(() => WatchingProfileScreen(), arguments: true);
+        // إذا كان Gateway مغلق من الأدمن أو المستخدم دخل سابقاً بالكود
+        bool gatewayEnabled = appConfigs.value.gatewayEnabled;
+        bool gatewayUnlocked = getBoolAsync('gateway_unlocked');
+
+        if (!gatewayEnabled || gatewayUnlocked) {
+          // اذهب مباشرة للداشبورد
+          Get.offAll(() => DashboardScreen(), binding: BindingsBuilder(() {
+            getDashboardController().onBottomTabChange(BottomItem.home);
+          }));
         } else {
-          Get.offAll(
-            () => DashboardScreen(),
-            binding: BindingsBuilder(() {
-              getDashboardController().onBottomTabChange(BottomItem.home);
-            }),
-          );
+          Get.offAll(() => const GatewayScreen());
         }
       } catch (e) {
         log('_navigateOnError error: $e');
+        Get.offAll(() => const GatewayScreen());
       }
     });
   }

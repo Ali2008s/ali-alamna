@@ -109,3 +109,6 @@ flutter:
     - assets/gif/
     - assets/sounds/
     - shorebird.yaml
+
+dependency_overrides:
+  web: ^0.5.1

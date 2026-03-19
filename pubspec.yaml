@@ -82,7 +82,6 @@ dependencies:
   #Focus Sound Effect
   flutter_soloud: ^3.4.1
   webview_flutter_web: ^0.2.3+4
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
